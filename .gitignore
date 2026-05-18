@@ -1,0 +1,28 @@
+# Source data (large; do not commit — hashes live in MANIFEST.md)
+data/raw/
+
+# Generated output tables (regenerable from notebooks in ~5s; binary parquet)
+outputs/tables/
+# (outputs/figures/*.png stays committed — referenced by README hero image)
+
+# Internal planning docs (not part of the GitHub portfolio surface)
+CLAUDE.md
+data_profile.md
+tasks/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS / IDE
+.DS_Store
+.Rhistory
+.vscode/
+.idea/
