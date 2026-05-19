@@ -1,7 +1,7 @@
 # MANIFEST — Amazon Revenue Analytics
 
 > Generated and updated incrementally by each layer's notebook.
-> Last updated: 2026-05-19 06:22:03 UTC
+> Last updated: 2026-05-19 06:59:06 UTC
 > Project commit: (uncommitted)
 
 ## Inputs
@@ -51,8 +51,7 @@ Hashes computed via `hashlib.sha256(path.read_bytes()).hexdigest()` -- see
 
 | File | DPI | Size | Purpose |
 |---|---|---|---|
-| `decile_rar_ladder.png` | 300 | 206 KB | Layer 2 hero (Task 7.8) — recommended for README |
-| `segment_rar_bar.png` | 300 | 315 KB | Layer 2 supporting bar chart (Task 7.8) — alternative hero |
+| `decile_rar_ladder.png` | 300 | 206 KB | Layer 2 hero (Task 7.8) — embedded in README |
 | `coefficient_chart.png` | 300 | 196 KB | Layer 2 model interpretability (Task 7.4) |
 | `calibration_curve.png` | 300 | 213 KB | Layer 2 model trustworthiness (Task 7.5) |
 | `roc_curve.png` | 300 | 193 KB | Layer 2 ROC supporting visual (Task 7.9) |
