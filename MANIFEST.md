@@ -1,7 +1,7 @@
 # MANIFEST — Amazon Revenue Analytics
 
 > Generated and updated incrementally by each layer's notebook.
-> Last updated: 2026-05-19 09:06:23 UTC
+> Last updated: 2026-05-19 09:07:45 UTC
 > Project commit: (uncommitted)
 
 ## Inputs
@@ -54,7 +54,7 @@ Hashes computed via `hashlib.sha256(path.read_bytes()).hexdigest()` -- see
 | `decile_rar_ladder.png` | 300 | 206 KB | Layer 2 hero (Task 7.8) — embedded in README |
 | `coefficient_chart.png` | 300 | 194 KB | Layer 2 model interpretability (Task 7.4) |
 | `calibration_curve.png` | 300 | 213 KB | Layer 2 model trustworthiness (Task 7.5) |
-| `roc_curve.png` | 300 | 192 KB | Layer 2 ROC supporting visual (Task 7.9) |
+| `roc_curve.png` | 300 | 200 KB | Layer 2 ROC supporting visual (Task 7.9) |
 
 ## Code artifacts (both layers)
 
@@ -92,7 +92,7 @@ Bootstrap iteration counts:
 - **Dependency pinning:** See `requirements.txt`. Critical versions: DuckDB ≥ 1.0, Polars ≥ 1.0, scikit-learn ≥ 1.5.
 - **Python version:** 3.11+ (developed on 3.13.9).
 - **Order Date parsing:** Raw is `M/D/YY`; all SQL uses `STRPTIME("Order Date", '%-m/%-d/%y')`. Implicit `CAST AS DATE` would silently NULL 71% of rows.
-- **Walk-forward boundary:** Layer 2 features in `sql/05_household_features.sql` are filtered at the SQL level to `Order Date < 2022-07-01`. Outcome in `sql/06_q3_outcome.sql` reads strictly post-cutoff data. The two files are the only places that touch their respective time windows. Shuffle-label diagnostic empirically validates no leakage (median AUC = 0.54, max = 0.57 across 50 shuffles, well below the 0.60 gate).
+- **Walk-forward boundary:** Layer 2 features in `sql/05_household_features.sql` are filtered at the SQL level to `Order Date < 2022-07-01`. Outcome in `sql/06_q3_outcome.sql` reads strictly post-cutoff data. The two files are the only places that touch their respective time windows. Shuffle-label diagnostic empirically validates no leakage (median AUC = 0.54, max = 0.57 across 50 shuffles, well below the 0.60 leakage-suspicion threshold).
 - **Data versioning:** Source CSVs are not committed (gitignored).
 
 ## Changelog
