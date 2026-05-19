@@ -2,7 +2,7 @@
 
 Audit trail for inputs, output tables, figures, code artifacts, and runtime metadata across Layer 1, Layer 2, and Layer 3.
 
-**Generated:** 2026-05-19T21:18:21
+**Generated:** 2026-05-19T22:23:10
 
 ## Inputs (data/raw/, gitignored)
 
@@ -33,38 +33,38 @@ Audit trail for inputs, output tables, figures, code artifacts, and runtime meta
 | `outputs/tables/category_layer_crosswalk.parquet` | `Layer 3 Task 8.4 — Layer 1 deciles + Layer 2 RaR overlay` | 12 | 8 |
 | `outputs/tables/category_cohort_gateway.parquet` | `Layer 3 Task 8.5 — new vs established cohort lift` | 12 | 8 |
 
-## Output figures (outputs/figures/, committed @ 300 DPI)
+## Output figures (outputs/figures/, committed @ 300 DPI, organized by layer)
 
-### Layer 1
-
-| File | DPI | Size | Purpose |
-|---|---|---|---|
-| `lorenz_curve.png` | 300 | 262 KB | Layer 1 hero (Task 6.6) — Lorenz + Gini = 0.529 |
-| `decile_contribution_bar.png` | 300 | 216 KB | Layer 1 supporting (Task 6.7) — decile GMV % |
-| `concentration_over_time.png` | 300 | 287 KB | Layer 1 conditional time-series (Task 6.9) — dual axis Gini + GMV |
-
-### Layer 2
+### Layer 1 — `outputs/figures/layer1/`
 
 | File | DPI | Size | Purpose |
 |---|---|---|---|
-| `decile_rar_ladder.png` | 300 | 206 KB | Layer 2 hero (Task 7.8) — RaR by decile |
-| `coefficient_chart.png` | 300 | 194 KB | Layer 2 model interpretability (Task 7.4) |
-| `calibration_curve.png` | 300 | 213 KB | Layer 2 model trustworthiness (Task 7.5) |
-| `roc_curve.png` | 300 | 200 KB | Layer 2 ROC supporting visual (Task 7.9) |
+| `layer1/lorenz_curve.png` | 300 | 262 KB | Layer 1 hero (Task 6.6) — Lorenz + Gini = 0.529 |
+| `layer1/decile_contribution_bar.png` | 300 | 216 KB | Layer 1 supporting (Task 6.7) — decile GMV % |
+| `layer1/concentration_over_time.png` | 300 | 287 KB | Layer 1 conditional (Task 6.9) — dual axis Gini + GMV |
 
-### Layer 3
+### Layer 2 — `outputs/figures/layer2/`
 
 | File | DPI | Size | Purpose |
 |---|---|---|---|
-| `category_allocation_matrix.png` | 300 | 359 KB | Layer 3 hero (Task 8.6) — 4-D Scale × Growth × bubble size × color |
-| `category_ranking_table.png` | 300 | 307 KB | Layer 3 supporting (Task 8.7) — CAGR ranking with bootstrap CI |
-| `category_gateway_lift.png` | 300 | 268 KB | Layer 3 supporting (Task 8.8) — new vs established cohort lift |
+| `layer2/decile_rar_ladder.png` | 300 | 206 KB | Layer 2 hero (Task 7.8) — RaR by decile |
+| `layer2/coefficient_chart.png` | 300 | 194 KB | Layer 2 model interpretability (Task 7.4) |
+| `layer2/calibration_curve.png` | 300 | 219 KB | Layer 2 model trustworthiness (Task 7.5) — bin-numbered |
+| `layer2/roc_curve.png` | 300 | 200 KB | Layer 2 ROC supporting (Task 7.9) |
+
+### Layer 3 — `outputs/figures/layer3/`
+
+| File | DPI | Size | Purpose |
+|---|---|---|---|
+| `layer3/category_allocation_matrix.png` | 300 | 391 KB | Layer 3 hero (Task 8.6) — 4-D Scale × Growth × bubble × color |
+| `layer3/category_ranking_table.png` | 300 | 345 KB | Layer 3 supporting (Task 8.7) — CAGR ranking with bootstrap CI |
+| `layer3/category_gateway_lift.png` | 300 | 283 KB | Layer 3 supporting (Task 8.8) — new vs established cohort lift |
 
 ## Code artifacts
 
 | File | Purpose |
 |---|---|
-| `sql/01_user_gmv_capped.sql` | Layer 1: User-level GMV with STRPTIME cohort cap |
+| `sql/01_user_gmv_capped.sql` | Layer 1: user-level GMV with STRPTIME cohort cap |
 | `sql/02_decile_assignment.sql` | Layer 1: NTILE(10) decile assignment |
 | `sql/03_decile_contribution.sql` | Layer 1: decile percent rollup |
 | `sql/04_demographic_join.sql` | Layer 1: decile × demographic over-index |
@@ -97,7 +97,8 @@ Audit trail for inputs, output tables, figures, code artifacts, and runtime meta
 
 ## Changelog
 
-- 2026-05-19 — Layer 3 shipped: category_taxonomy.json + 4 parquets + 3 figures + sql/07 + notebook 03 + README integration
+- 2026-05-19 — Figure reorg: 10 PNGs moved into outputs/figures/{layer1,layer2,layer3}/ subdirs. Calibration curve bin labels added. Layer 3 figure label/whisker overlaps fixed.
+- 2026-05-19 — Layer 3 shipped: taxonomy + 6 parquets + 3 figures + sql/07 + notebook 03 + README integration
 - 2026-05-19 — Layer 2 polish (figure aspect, CI determinism, narrative audit pass)
 - 2026-05-18 — Layer 2 shipped: notebook 02 + 5 figures + sql/05 + sql/06 + 5 parquets
 - 2026-05-18 — Layer 1 shipped: notebook 01 + 3 figures + sql/01-04 + 5 parquets

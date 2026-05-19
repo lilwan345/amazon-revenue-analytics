@@ -3,7 +3,7 @@
 
 **A BI framework for finance decision support, built on 2,846 U.S. Amazon households (2018–2022).**
 
-[![Lorenz curve preview](outputs/figures/lorenz_curve.png)](outputs/figures/lorenz_curve.png)
+[![Lorenz curve preview](outputs/figures/layer1/lorenz_curve.png)](outputs/figures/layer1/lorenz_curve.png)
 
 ---
 
@@ -39,11 +39,11 @@ This project answers each question with a dedicated analytical layer.
 
 **Layer 2 — revenue concentration is at the top, but revenue-at-risk is in the middle.** Top decile drives 36.2% of GMV but only **0.5% of forward-looking RaR** ($143 of $29,148 panel total). Bottom decile contributes 0.5% of GMV but carries **10.4% of RaR** ($3,021) — a **21x asymmetry** between best-and-worst-case forward stability. Mid-deciles (6-9) carry **65% of RaR while accounting for only 13% of GMV** (5x amplification). The data suggests a reallocation of retention budget from VIP defense to mid-tier engagement.
 
-[![Decile RaR ladder preview](outputs/figures/decile_rar_ladder.png)](outputs/figures/decile_rar_ladder.png)
+[![Decile RaR ladder preview](outputs/figures/layer2/decile_rar_ladder.png)](outputs/figures/layer2/decile_rar_ladder.png)
 
 **Layer 3 — naive Scale × Growth lies; the Layer 1+2 cross-layer lens reframes allocation.** Twelve super-categories rolled up from 1,816 raw Amazon browse-node labels (Claude Opus 4.7 taxonomy, 89% specific-mapped, audit JSON committed). A naive Scale × Growth quadrant would label Pet/Health "INVEST" and Books "MAINTAIN" — both are operationally misleading once the cross-layer crosswalk is applied: **Pet is VIP retention** (D1 share = 40% of Pet GMV, lowest mid-decile share at 9.6%, lowest acquisition-gateway lift at 0.51), not RaR mitigation. **Books is broad-base retention infrastructure** (D1 share = 27%, lowest of any super-category; 88% panel breadth; mid-decile GMV share = 19%) — harvesting would worsen Layer 2's mid-decile RaR concentration. **The acquisition surface is broad-utility commodity categories** (Electronics 0.87 / Apparel 0.85 / Home 0.84 / H&PC 0.83), not specialty verticals. The data suggests segmenting allocation into three lanes (top-decile retention, mid-decile RaR mitigation, customer acquisition) rather than one growth bet per category.
 
-[![Category allocation matrix preview](outputs/figures/category_allocation_matrix.png)](outputs/figures/category_allocation_matrix.png)
+[![Category allocation matrix preview](outputs/figures/layer3/category_allocation_matrix.png)](outputs/figures/layer3/category_allocation_matrix.png)
 
 ## The Method
 
@@ -122,7 +122,10 @@ amazon-revenue-analytics/
 │   └── 03_layer3_allocation.ipynb         ← Layer 3 main analysis (growth allocation matrix)
 └── outputs/
     ├── tables/                            ← 10 parquet tables (gitignored — regenerable)
-    └── figures/                           ← 10 PNG figures @ 300 dpi (committed) + 1 taxonomy JSON
+    └── figures/                           ← 10 PNG figures @ 300 dpi (committed), organized by layer
+        ├── layer1/                         ← lorenz_curve, decile_contribution_bar, concentration_over_time
+        ├── layer2/                         ← decile_rar_ladder (hero), coefficient_chart, calibration_curve, roc_curve
+        └── layer3/                         ← category_allocation_matrix (hero), category_ranking_table, category_gateway_lift
 ```
 
 ## Tech stack
