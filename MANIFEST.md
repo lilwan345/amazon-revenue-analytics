@@ -1,7 +1,7 @@
 # MANIFEST — Amazon Revenue Analytics
 
 > Generated and updated incrementally by each layer's notebook.
-> Last updated: 2026-05-19 08:23:37 UTC
+> Last updated: 2026-05-19 08:31:46 UTC
 > Project commit: (uncommitted)
 
 ## Inputs
