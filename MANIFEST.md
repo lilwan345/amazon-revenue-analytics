@@ -1,7 +1,7 @@
 # MANIFEST — Amazon Revenue Analytics
 
 > Generated and updated incrementally by each layer's notebook.
-> Last updated: 2026-05-19 08:04:17 UTC
+> Last updated: 2026-05-19 08:22:12 UTC
 > Project commit: (uncommitted)
 
 ## Inputs
@@ -33,7 +33,7 @@ Hashes computed via `hashlib.sha256(path.read_bytes()).hexdigest()` -- see
 |---|---|---|---|
 | `lorenz_curve.png` | 300 | 262 KB | Layer 1 hero (Task 6.6) |
 | `decile_contribution_bar.png` | 300 | 216 KB | Layer 1 supporting (Task 6.7) |
-| `concentration_over_time.png` | 300 | 238 KB | Layer 1 conditional time-series (Task 6.9) |
+| `concentration_over_time.png` | 300 | 287 KB | Layer 1 conditional time-series (Task 6.9) |
 
 ## Outputs — Layer 2
 
@@ -54,7 +54,7 @@ Hashes computed via `hashlib.sha256(path.read_bytes()).hexdigest()` -- see
 | `decile_rar_ladder.png` | 300 | 206 KB | Layer 2 hero (Task 7.8) — embedded in README |
 | `coefficient_chart.png` | 300 | 193 KB | Layer 2 model interpretability (Task 7.4) |
 | `calibration_curve.png` | 300 | 213 KB | Layer 2 model trustworthiness (Task 7.5) |
-| `roc_curve.png` | 300 | 192 KB | Layer 2 ROC supporting visual (Task 7.9) |
+| `roc_curve.png` | 300 | 193 KB | Layer 2 ROC supporting visual (Task 7.9) |
 
 ## Code artifacts (both layers)
 
