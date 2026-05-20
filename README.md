@@ -14,6 +14,7 @@
 - [The Method](#the-method)
 - [The Caveat](#the-caveat)
 - [Methodology Notes](#methodology-notes)
+- [Layer 3 — Category Allocation Matrix](#layer-3--category-allocation-matrix-deep-dive)
 - [Limitations](#limitations)
 - [Repository Structure](#repository-structure)
 - [Tech Stack](#tech-stack)
@@ -81,6 +82,74 @@ The 2,846 households are a **consenting subsample** of 5,027 Prolific prescreen 
 - **Cross-layer crosswalk is the Layer 3 differentiator.** Without joining Layer 1 deciles + Layer 2 per-household RaR back into the category aggregates, Layer 3 would be a generic Scale × Growth matrix — the same one any retail-strategy textbook generates. The crosswalk is what surfaces the "Pet is VIP retention, not RaR mitigation" and "Books is broad-base retention infrastructure" findings; both are direct consequences of folding the prior layers in.
 - **Cohort gateway interpretation: ranking matters, absolute lift doesn't.** All super-categories show lift < 1.0 (new-cohort penetration is below established-cohort penetration for every category), because new cohort (n=196, post-2020 joiners) has had less time to explore Amazon's category surface than established cohort (n=2,649). The relative ranking — Electronics/Apparel/Home/H&PC tier at 0.83-0.87 vs Pet/Gift Cards at 0.51-0.58 — is what defines "acquisition gateway" vs "loyalty surface". Absolute lift of any single category is not the headline number.
 - **Sub-category granularity is out of scope.** The 12 super-categories collapse meaningful within-category variance — Health & Personal Care lumps medication (FDA-regulated, repeat-buy) with cosmetics (impulse, brand-driven). Sub-category Scale × Growth analysis is the natural next step; in this panel it would require either domain-knowledge rollup of the ~700 still-mappable health leaves or a second-pass Claude taxonomy. Out of scope here; flagged for downstream work.
+
+## Layer 3 — Category Allocation Matrix (Deep Dive)
+
+### The question
+
+> *Which categories deserve priority investment given current growth × scale dynamics?*
+
+### Taxonomy — 1,816 raw browse-node leaves → 11 super-categories
+
+Used Claude Opus 4.7 to roll up 1,816 raw Amazon browse-node leaf categories into **11 specific super-categories** plus 1 explicit `Other / Unknown` bucket (89.0% of cohort-capped GMV maps to a specific super-category; 5.4% NULL bucket; 5.7% long-tail). Deterministic mapping committed at `outputs/tables/category_taxonomy.json`; a 50-row spot-check audit caught and patched 3 false positives before commit. Full coverage table + audit trail in Methodology Notes (Layer 3 — *LLM-generated taxonomy with audit JSON*).
+
+### Scale × Growth dimensions
+
+- **Scale** = 2022 GMV per super-category (current footprint within this panel).
+- **Growth** = 4-year CAGR, `(2022 GMV / 2018 GMV)^(1/4) − 1`. The 4-year window normalizes through COVID distortion (2020 is already COVID-lifted in this panel); see Methodology Notes for the rationale vs a 2-year YoY baseline.
+- **Panel median scale**: **$369K** (Toys); **panel median CAGR**: **24.8%** (Apparel). These define the quadrant split below.
+
+Each metric carries a bootstrap 95% CI (B=1000, seed=42, household-resample) — smaller buying populations (Pet ≈ 1,350 households; Gift Cards ≈ 1,200) report wider CIs.
+
+### Category growth ranking
+
+[![Category growth ranking](outputs/figures/layer3/category_ranking_table.png)](outputs/figures/layer3/category_ranking_table.png)
+
+Ranked by 4-year CAGR: Grocery & Food & Beverage leads at **34.3%**, followed by Pet (27.2%) and Home, Kitchen & Bath (26.3%); the floor is Books & Media (**1.5%**), Gift Cards & Digital (9.3%), and Electronics & Accessories (14.7%). The full 11-category ranking with bootstrap 95% CIs is in the figure above; each category's scale and CAGR are tabled in the quadrant readout below.
+
+### BCG-style quadrant readout
+
+[![Category allocation matrix](outputs/figures/layer3/category_allocation_matrix.png)](outputs/figures/layer3/category_allocation_matrix.png)
+
+Splitting the 11 super-categories along the median scale ($369K) and median CAGR (24.8%) lines:
+
+| Quadrant | n | Super-categories (scale, CAGR) |
+|---|---|---|
+| **INVEST** — high growth × high scale | 3 | Grocery ($507K, 34.3%) · Home, Kitchen & Bath ($1,101K, 26.3%) · Health, Beauty & Personal Care ($777K, 25.0%) |
+| **BET-small** — high growth × low scale | 2 | Pet ($291K, 27.2%) · Auto, Tools & Outdoor ($251K, 26.2%) |
+| **MAINTAIN** — low growth × high scale | 1 | Electronics & Accessories ($970K, 14.7%) |
+| **HARVEST** — low growth × low scale | 3 | Office, Stationery & Crafts ($154K, 23.4%) · Gift Cards & Digital ($250K, 9.3%) · Books & Media ($191K, 1.5%) |
+| At median boundary | 2 | Apparel & Footwear ($763K, 24.8% — at median CAGR) · Toys, Games & Hobbies ($369K, 21.4% — at median scale) |
+
+### The differentiator — high growth ≠ acquisition gateway
+
+A naïve BCG read would say "invest in INVEST, harvest HARVEST." Layer 3 layers a second lens on top: **cohort-based acquisition gateway lift** (new cohort = 196 households joining ≥ 2020-01-01; established cohort = 2,649). Lift ratio = new-cohort category penetration / established-cohort penetration. Every value is < 1.0 in this panel — new cohort has had less time to expand category exploration — so the **relative ranking is the signal**, not the absolute level.
+
+[![Category adoption speed](outputs/figures/layer3/category_gateway_lift.png)](outputs/figures/layer3/category_gateway_lift.png)
+
+| Tier | Lift range | Categories |
+|---|---|---|
+| Fast-adoption (top 4 by rank) | 0.83–0.87 | Electronics (0.87) · Apparel (0.85) · Home, Kitchen & Bath (0.84) · Health, Beauty & Personal Care (0.83) |
+| Neutral mid-tier (rank 5–8) | 0.63–0.73 | Toys (0.73) · Grocery (0.70) · Office (0.64) · Books (0.63) |
+| Loyalty / repeat-purchase (bottom 3) | 0.51–0.61 | Auto (0.61) · Gift Cards (0.58) · Pet (0.51) |
+
+**Cross-tabbing the BCG quadrant and the adoption-speed tier produces the operational allocation insight:**
+
+- **Double signal — INVEST × fast-adoption.** Home, Kitchen & Bath (26.3% CAGR, 0.84 lift) and Health, Beauty & Personal Care (25.0%, 0.83): high growth that is structurally durable because new customers enter via these categories, not just existing ones spending more. The cleanest INVEST candidates.
+- **Loyalty-depth growth — INVEST/BET × low gateway.** Grocery (34.3%, 0.70), Pet (27.2%, 0.51), Auto (26.2%, 0.61): strong secular growth but weak new-cohort penetration. The data suggests existing-customer deepening, not new-household acquisition — retention budget framing, not acquisition.
+- **Stalled acquisition surface — MAINTAIN × fast-adoption.** Electronics (0.87 lift, highest of any super-category; 14.7% CAGR, below the 24.8% median): a traditional first-purchase category whose growth has plateaued — defensive margin maintenance, not growth bet.
+- **Pure defensive — HARVEST × neutral/low gateway.** Books (1.5% CAGR, 0.63 lift), Gift Cards (9.3%, 0.58), Office (23.4%, 0.64). Books is the cleanest structural-decline read — low growth, low scale, neither acquisition surface nor loyalty anchor.
+
+### Layer 1+2 cross-layer crosswalk
+
+The cross-layer crosswalk (per-super-category D1 GMV share, mid-decile RaR share, household breadth) is what makes the matrix actionable rather than a generic Scale × Growth read. Specifically:
+
+- **Pet** has the highest D1 GMV concentration (39.9% from top decile) and lowest mid-decile RaR exposure (9.6%). With its 0.51 gateway lift, the data suggests Pet is a VIP-anchored loyalty category — not a RaR-mitigation target, despite landing in BET-small on Scale × Growth alone.
+- **Books** has the lowest D1 GMV concentration (26.8%) and broadest panel reach (87.7% of households). It's the closest super-category to a broad-base retention anchor — so the naïve "HARVEST Books" read would hit mid-decile households Layer 2 flagged as carrying 65% of panel RaR.
+
+Full cross-layer crosswalk parquet + audit trail in Methodology Notes (Layer 3). Layer 3-specific limitations (sub-category granularity, gateway lift < 1.0 by construction, no cost-side data) fold into the main Limitations + Methodology Notes below.
+
+---
 
 ## Limitations
 
