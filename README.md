@@ -24,7 +24,7 @@ Method is SQL-first (DuckDB) with a Polars cross-check on every aggregation, boo
 - [The Answer](#the-answer)
 - [The Method](#the-method)
 - [The Caveat](#the-caveat)
-- [Methodology Notes](#methodology-notes)
+- [Methodology](#methodology)
 - [Layer 3 — Category Allocation Matrix](#layer-3--category-allocation-matrix-deep-dive)
 - [Limitations](#limitations)
 - [Repository Structure](#repository-structure)
@@ -76,34 +76,9 @@ The 2,846 households are a **consenting subsample** of 5,027 Prolific prescreen 
 
 ---
 
-## Methodology Notes
+## Methodology
 
-**Layer 1 (concentration analysis):**
-
-- **`Order Date` raw format is `M/D/YY`.** Implicit `CAST("Order Date" AS DATE)` parses only **28.6%** of these strings; the other 71% silently NULL. All SQL in `sql/` uses explicit `STRPTIME("Order Date", '%-m/%-d/%y')`. Using CAST would have understated Layer 1 GMV by ~70%.
-- **Cross-validation discipline.** Every core aggregation has both a SQL implementation (under `sql/`) and a Polars one (in the notebook), asserted byte-equal before any parquet is saved. This catches silent aggregation bugs — e.g., a `n_distinct_categories_trailing_12m` mismatch where Polars's `n_unique()` counts NULL as distinct but SQL's `COUNT(DISTINCT)` does not (a 1,684-household discrepancy).
-- **Confidence intervals on all reported ratios.** No headline number is a bare point estimate. Bootstrap is non-parametric (B=1000, seed=42) — no normality assumption, appropriate for the heavy-tailed GMV distribution. Findings whose 95% CIs cross zero are recorded but kept out of the headline.
-- **Frequency-vs-basket split is an additive log decomposition.** The top-decile GMV ratio factors exactly as frequency ratio × basket-size ratio, so on a log scale `ln(GMV ratio) = ln(frequency ratio) + ln(basket ratio)`. Each driver's share is its log term divided by `ln(GMV ratio)`; because the factorization is exact, there is no interaction residual and the two shares sum to 1.0 (94% frequency + 6% basket). That is why the split is reported as a clean percentage rather than a regression attribution.
-- **Audit-trail manifest.** `MANIFEST.md` at project root carries SHA256 hashes of the three input CSVs, schemas + row counts of every output `.parquet`, dimensions of every output figure, and observed runtime. A reviewer can verify input integrity via `shasum -a 256 data/raw/*.csv`.
-
-**Layer 2 (forward-looking RaR):**
-
-- **Mid-project revision: one-tailed → two-tailed winsorization.** Numeric features are winsorized at the 1st and 99th percentiles (bilateral) before z-score standardization. The original plan was single-tail (99th only), but symmetric-tail features (`aov_slope`, `gmv_trend`) would have produced max |z| = 21.6 on the negative `aov_slope` tail; a pipeline assertion flagged |z| > 20 before model fit, prompting the bilateral fix. The winsorize-then-z-score order is locked — z-scoring first would leave heavy-tail leverage in the fit.
-- **Feature leakage defense (SQL guard + empirical validation).** `sql/05_household_features.sql` wraps every feature aggregation in an outer-CTE filter on `Order Date < 2022-07-01`, blocking post-cutoff data structurally. A shuffle-label diagnostic then validates it empirically: permuting `is_dropoff_q3` 50× and refitting gives median AUC 0.54, max 0.57 — well below the 0.60 leakage-suspicion threshold, near the 0.50 random baseline. The real-label 0.9052 is genuine pre-cutoff signal, not leakage.
-- **AUC magnitude reflects task difficulty, not just model strength.** An AUC of 0.9052 is high for a household-behavior model, so it is worth separating "is this leakage?" (answered above) from "how hard is the task?" `is_dropoff_q3` flags zero purchases in a single quarter — a structurally lower bar than multi-quarter churn, since a household silent for months is unsurprisingly likely to stay silent one more quarter. A recency-only baseline (the single most obvious signal, same winsorize → z-score → ridge pipeline, in-sample on the full panel) already reaches **AUC ≈ 0.86**; the full 8-feature model adds only **+0.046** over it. Read 0.9052 as recency-dominated task structure plus modest multi-feature lift, not as an unusually powerful model.
-- **Calibration: flag-and-disclose, not auto-correct.** Logistic regression calibration was evaluated across 10 probability quantile bins (~284 households per bin). Nine bins fell within ±0.05 of perfect; bin 9 (modeled ≈ 28%, 284 households) showed actual drop-off of 37% — a 9.3pp underestimate. RaR estimates concentrated in this probability range carry a known ~25% systematic downward bias and are reported as lower bounds. Brier-score information gain over baseline is 32% (model 0.0755 vs no-skill 0.1108), above the locked 10% threshold. We chose to flag the bin-9 gap rather than auto-correct it: isotonic recalibration would have closed the gap but obscured a signal finance reviewers should see.
-- **Sanity band & three RaR metrics.** The original sanity band assumed independence (`panel_size × mean(prob_dropoff) × mean(expected_q3_gmv)`) and implied $150K-$500K; actual is $29,148. The gap is a strong negative correlation between drop-off probability and expected revenue (r = -0.46): high-spenders are stable, low-spenders carry the drop-off mass at tiny dollar exposure. The revised band ($25K-$100K) matches observed behavior. Three RaR metrics per segment: **panel-share** (drives budget allocation, used in headline), **internal fragility** (segment's own expected revenue at risk), and **per-household mean** (dominated by the same negative correlation).
-- **Recency cap interpretability trade-off.** `recency_days` is capped at 365 days, so every ≥1-year-silent customer maps to one z-score — a human-readable scale for stakeholder review. The trade-off: recency lost long-tail discrimination, dropping from the anticipated strongest predictor to 3rd in the standardized coefficient ranking (|β| = 0.54 vs 1.79 for category breadth, 1.64 for trailing-12m GMV). Stakeholder readability was chosen over predictive maximization.
-- **Coefficient ≠ AUC contribution under multi-collinearity.** `n_distinct_categories_trailing_12m` carries the largest standardized coefficient (|β| = 1.79), but per-feature ablation shows `recency_days` is the sole non-redundant contributor — removing it drops AUC by 0.0113, versus < 0.002 for any other feature. Coefficient reflects in-model signal weight under ridge regularization; ablation reflects out-of-model substitutability. Both are reported: coefficient drives the category-breadth finding, ablation grounds the predictive-importance defense.
-
-**Layer 3 (growth allocation matrix):**
-
-- **LLM-generated taxonomy with audit JSON.** Claude Opus 4.7 rolled up 1,816 raw browse-node leaves into 12 super-categories via priority-ordered keyword matching + explicit lookups. The mapping is committed at `outputs/tables/category_taxonomy.json` (flattened CSV for SQL JOINs). Coverage: 89.0% of GMV maps to a specific super-category, 5.4% to an explicit NULL bucket (raw `Category` NULL in 50,694 transactions — observable, not dropped), 5.7% to `Other / Unknown` (long-tail leaves like `HEAT_PRESS` that don't cleanly map). A 50-row spot-check caught 3 false positives (`ABIS_DRUGSTORE`, `TREE_SKIRT`, `TEAPOT`), patched before commit. That 6% rate extrapolates to ~100–110 of 1,816 leaves, but error is GMV-weighted, not leaf-weighted — the caught errors were negligible-GMV long-tail leaves, and the cross-layer findings rest on relative D1 share and panel breadth, robust to mismapping below ~10–15%. Read per-category Scale × Growth with ±2–3pp tolerance, not as point-precise.
-- **4-year CAGR over 2-year growth rate.** Growth metric is `(2022 GMV / 2018 GMV)^(1/4) − 1`, not `(2022 − 2020) / 2020`. Rationale: 2020 was already COVID-lifted in this panel (panel GMV jumped $3.6M → $5.3M from 2019 → 2020). Using 2020 as denominator suppresses growth signal for categories that surged early in COVID. The full 4-year window captures secular trend; the 2-year baseline is reported as `growth_2020` in the parquet for sensitivity but is not the headline.
-- **Bootstrap CIs on every metric — same n=2,846 panel logic as Layers 1/2.** Scale, CAGR, per-household scale, and gateway lift each carry bootstrap household-resample 95% CIs (B=1000, seed=42); small buyer pools (Pet 1,350; Gift Cards 1,200) get wider CIs. Bootstrap is robust at panel and super-category level, but cell-level estimates (e.g. Pet × D1, ~135 households) carry wider CIs the headline doesn't convey — read the crosswalk figures as directional, relative orderings more reliable than absolute cell values.
-- **Cross-layer crosswalk is the Layer 3 differentiator.** Without joining Layer 1 deciles + Layer 2 per-household RaR back into the category aggregates, Layer 3 would be a generic Scale × Growth matrix. That join is what surfaces the Pet (VIP-anchored loyalty, not RaR mitigation) and Books (broad-base retention) readings — direct consequences of folding the prior layers in, not category geometry alone.
-- **Cohort gateway interpretation: ranking matters, absolute lift doesn't.** Every super-category shows lift < 1.0 because the new cohort (n=196 post-2020 joiners) has had less time to explore Amazon's category surface than the established cohort (n=2,649). So the relative ranking — Electronics/Apparel/Home/H&PC at 0.83-0.87 vs Pet/Gift Cards at 0.51-0.58 — defines "acquisition gateway" vs "loyalty surface," not the absolute level.
-- **Sub-category granularity is out of scope.** The 12 super-categories collapse within-category variance — Health & Personal Care lumps medication (FDA-regulated, repeat-buy) with cosmetics (impulse, brand-driven). Sub-category Scale × Growth is the natural next step, requiring either a domain rollup of the ~700 mappable health leaves or a second-pass taxonomy. Out of scope here.
+Every headline number is backed by an explicit audit trail — SQL ↔ Polars byte-equality cross-validation, bootstrap CIs (B=1000, seed=42), the feature-leakage defense, the calibration trade-off, the LLM-taxonomy audit, and each mid-project revision. The full per-layer write-up lives in **[METHODOLOGY.md](METHODOLOGY.md)**.
 
 ## Layer 3 — Category Allocation Matrix (Deep Dive)
 
@@ -111,12 +86,12 @@ The 2,846 households are a **consenting subsample** of 5,027 Prolific prescreen 
 
 > *Which categories deserve priority investment given current growth × scale dynamics?*
 
-The 11 specific super-categories below (plus an explicit `Other / Unknown` bucket) are rolled up from 1,816 raw browse-node leaves via a committed Claude Opus 4.7 taxonomy — coverage, false-positive audit, and JSON path are in Methodology Notes (Layer 3).
+The 11 specific super-categories below (plus an explicit `Other / Unknown` bucket) are rolled up from 1,816 raw browse-node leaves via a committed Claude Opus 4.7 taxonomy — coverage, false-positive audit, and JSON path are in [METHODOLOGY.md](METHODOLOGY.md) (Layer 3).
 
 ### Scale × Growth dimensions
 
 - **Scale** = 2022 GMV per super-category (current footprint within this panel).
-- **Growth** = 4-year CAGR, `(2022 GMV / 2018 GMV)^(1/4) − 1` (the 4-year window normalizes through COVID distortion; rationale in Methodology Notes).
+- **Growth** = 4-year CAGR, `(2022 GMV / 2018 GMV)^(1/4) − 1` (the 4-year window normalizes through COVID distortion; rationale in [METHODOLOGY.md](METHODOLOGY.md)).
 - **Panel median scale**: **$369K** (Toys); **panel median CAGR**: **24.8%** (Apparel) — these define the quadrant split below.
 
 ### Category growth ranking
@@ -165,7 +140,7 @@ Folding Layer 1 deciles + Layer 2 RaR back in per super-category (D1 GMV share, 
 - **Pet** has the highest D1 GMV concentration (39.9% from top decile) and lowest mid-decile RaR exposure (9.6%). With its 0.51 gateway lift, the data suggests Pet behaves as a VIP-anchored loyalty category — not a RaR-mitigation target, despite landing in BET-small on Scale × Growth alone. One caveat on this reading: a high D1 GMV share can reflect either category loyalty (heavy users repeat-buy) or niche-ness (a small buyer pool mechanically concentrates share). Cleanly separating the two would require intra-decile repeat-purchase frequency, which is not computed here — so the loyalty interpretation is directional, and the niche alternative is not fully ruled out.
 - **Books** has the lowest D1 GMV concentration (26.8%) and broadest panel reach (87.7% of households). It's the closest super-category to a broad-base retention anchor — so the naïve "HARVEST Books" read would hit mid-decile households Layer 2 flagged as carrying 65% of panel RaR.
 
-Full crosswalk parquet + Layer 3-specific limitations (sub-category granularity, gateway lift < 1.0 by construction, no cost-side data) are in the Methodology Notes and Limitations below.
+Full crosswalk parquet + Layer 3-specific limitations (sub-category granularity, gateway lift < 1.0 by construction, no cost-side data) are in [METHODOLOGY.md](METHODOLOGY.md) and the Limitations below.
 
 ---
 
@@ -183,6 +158,7 @@ Full crosswalk parquet + Layer 3-specific limitations (sub-category granularity,
 ```
 amazon-revenue-analytics/
 ├── README.md                              ← you are here
+├── METHODOLOGY.md                          ← full per-layer methodology + audit trail
 ├── MANIFEST.md                            ← input hashes, output schemas, runtime
 ├── LICENSE                                ← MIT
 ├── requirements.txt
