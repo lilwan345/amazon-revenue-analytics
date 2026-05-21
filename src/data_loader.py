@@ -10,7 +10,7 @@ Three entry points used everywhere downstream:
 Plus a diagnostic:
 
   * probe_date_format() -> prints raw Order Date format and parse-rate tests
-                          for three candidate formats. Used once in Task 6.2 to
+                          for three candidate formats. Used once during setup to
                           decide whether sql/*.sql needs STRPTIME or plain CAST.
 
 Paths are anchored to the project root via Path(__file__).resolve().parent.parent
@@ -34,7 +34,7 @@ SEED: Final[int] = 42
 
 # Candidate Order Date formats (Polars chrono / DuckDB STRPTIME both accept these).
 # Probed in this order; first format with >=95% parse rate wins for the loader's
-# print message. Authoritative format selection still happens in Task 6.2 review.
+# print message. Authoritative format selection still happens in the date-format review.
 _DATE_FORMAT_CANDIDATES: Final[list[tuple[str, str]]] = [
     ("%-m/%-d/%y", "M/D/YY"),
     ("%-m/%-d/%Y", "M/D/YYYY"),
@@ -53,7 +53,7 @@ def load_purchases(sample: bool = False, n: int = 10_000) -> pl.DataFrame:
     """Read amazon-purchases.csv as Polars.
 
     Order Date is kept as Utf8 string -- downstream code parses with the format
-    locked in by Task 6.2 (either inside SQL via STRPTIME, or via an explicit
+    locked in by the date-format review (either inside SQL via STRPTIME, or via an explicit
     Polars cast after this loader). Keeping it raw here avoids committing to a
     format before the probe confirms one.
 
@@ -113,7 +113,7 @@ def get_duckdb_conn() -> duckdb.DuckDBPyConnection:
 def probe_date_format() -> None:
     """Diagnostic: print Order Date raw samples + parse rates for 3 candidate formats.
 
-    Used once during Task 6.2. After Leo confirms which format is correct, the
+    Used once during setup. After Leo confirms which format is correct, the
     chosen STRPTIME format string is wired into sql/01_user_gmv_capped.sql (and
     any future SQL that filters or aggregates on Order Date).
     """

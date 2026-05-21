@@ -1,7 +1,7 @@
 """Finance-clean matplotlib styling for Layer 1 visualizations.
 
-Helpers here are reused across the Lorenz curve (Task 6.6), the decile bar
-chart (Task 6.7), and any later figure. Keep this module style-only -- do not
+Helpers here are reused across the Lorenz curve, the decile bar
+chart, and any later figure. Keep this module style-only -- do not
 embed chart logic; chart logic belongs in the notebook so each layer's figure
 can be read end-to-end.
 """

@@ -1,6 +1,6 @@
 -- sql/05_household_features.sql
 --
--- Per-household feature panel as-of 2022-06-30 (Layer 2, Task 7.1).
+-- Per-household feature panel as-of 2022-06-30 (Layer 2).
 --
 -- WALK-FORWARD LEAKAGE GUARD:
 --   The first CTE `walk_forward_filter` enforces `Order Date < 2022-07-01`
@@ -27,7 +27,7 @@
 -- trimmed linear regression respectively, which are cleaner in dataframe code.
 --
 -- All 2,845 panel households are returned (LEFT JOIN against the cohort).
--- Households inactive in a window have COALESCE'd zeros (per R1 lock:
+-- Households inactive in a window have COALESCE'd zeros (by project lock:
 -- panel-internal inactivity treated as legitimate zero by cohort definition).
 
 WITH walk_forward_filter AS (

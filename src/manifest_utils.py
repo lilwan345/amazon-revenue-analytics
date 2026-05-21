@@ -1,6 +1,6 @@
 """MANIFEST helpers — input hashing, row counts, manifest writer.
 
-Used by Task 6.2 (init) and Task 6.11 (append Layer 1 outputs). The manifest
+Used at init and to append Layer 1 outputs. The manifest
 lives at the project root as MANIFEST.md; this module never writes anything
 inside outputs/ -- only the top-level audit doc.
 
@@ -49,7 +49,7 @@ def init_manifest(inputs: list[InputFile]) -> Path:
     """Write the initial MANIFEST.md at project root. Returns the path written.
 
     Idempotent: overwrites any existing MANIFEST.md. Outputs section is left as
-    a placeholder for Task 6.11 (Layer 1) and subsequent layers.
+    a placeholder for Layer 1 and subsequent layers.
     """
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
 
@@ -76,11 +76,11 @@ Hashes computed via `hashlib.sha256(path.read_bytes()).hexdigest()` — see
 
 ## Outputs — Layer 1
 
-*(Populated by Task 6.11 after Layer 1 outputs land in `outputs/tables/` and `outputs/figures/`.)*
+*(Populated after Layer 1 outputs land in `outputs/tables/` and `outputs/figures/`.)*
 
 ## Expected Runtime (clean kernel, M-series Mac)
 
-*(Populated by Task 6.11 after the full notebook runs once from a clean kernel.)*
+*(Populated after the full notebook runs once from a clean kernel.)*
 
 ## Reproducibility Notes
 
@@ -94,7 +94,7 @@ Hashes computed via `hashlib.sha256(path.read_bytes()).hexdigest()` — see
 
 | Date | Layer | Change |
 |---|---|---|
-| {timestamp[:10]} | 1 | Initial MANIFEST: input CSVs hashed during Task 6.2 sanity check |
+| {timestamp[:10]} | 1 | Initial MANIFEST: input CSVs hashed during the setup sanity check |
 """
 
     MANIFEST_PATH.write_text(body)

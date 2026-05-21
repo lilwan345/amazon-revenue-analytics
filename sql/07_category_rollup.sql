@@ -8,7 +8,7 @@
 -- Output: super-category × year aggregates over the cohort-capped panel
 -- (2018-2022, project rule "cohort cap at 2023-01-01"). Layer 3 metrics
 -- (scale, growth, volatility, per-household scale) are all derived from
--- this rollup parquet — see notebooks/03_layer3_allocation.ipynb Task 8.3.
+-- this rollup parquet — see notebooks/03_layer3_allocation.ipynb.
 --
 -- NULL raw category (4.8% of cohort-capped rows, 5.4% of GMV) is mapped
 -- to "Other / Unknown" via the LEFT JOIN + COALESCE on super_category.

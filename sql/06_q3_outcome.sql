@@ -1,6 +1,6 @@
 -- sql/06_q3_outcome.sql
 --
--- Outcome variable for the Layer 2 propensity model (Task 7.2).
+-- Outcome variable for the Layer 2 propensity model.
 --
 -- Definition: is_dropoff_q3 = 1 if a household made ZERO orders in 2022-Q3
 -- (Jul 1 -- Sep 30, 2022 inclusive), else 0.
