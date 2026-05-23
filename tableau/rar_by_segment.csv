@@ -1,0 +1,52 @@
+label,dimension,value,n_households,rar_dollars,rar_per_household,rar_share_pct
+order_freq: Less than 5 times per month,order_freq,Less than 5 times per month,1823,24152.15,13.25,4.52
+race: white,race,white,2329,22996.19,9.87,1.79
+gender: Male,gender,Male,1304,15421.48,11.83,2.42
+state: Other states,state,Other states,1246,13061.32,10.48,2.07
+education: Bachelor's degree,education,Bachelor's degree,1262,12861.24,10.19,1.89
+gender: Female,gender,Female,1462,12677.67,8.67,1.5
+education: High school diploma or GED,education,High school diploma or GED,1071,11691.12,10.92,2.37
+age: 25 - 34 years,age,25 - 34 years,1003,10784.31,10.75,2.2
+hh_size: 2,hh_size,2,901,9061.1,10.06,1.82
+hh_size: 1 (just me!),hh_size,1 (just me!),689,7836.67,11.37,2.72
+"income: $25,000 - $49,999",income,"$25,000 - $49,999",661,7499.74,11.35,2.79
+age: 35 - 44 years,age,35 - 44 years,713,6749.96,9.47,1.54
+hh_size: 4+,hh_size,4+,691,6208.05,8.98,1.39
+"income: $50,000 - $74,999",income,"$50,000 - $74,999",600,6096.48,10.16,1.98
+hh_size: 3,hh_size,3,564,6042.49,10.71,2.12
+age: 18 - 24 years,age,18 - 24 years,448,5479.27,12.23,3.37
+decile: 8,decile,8,284,5144.66,18.11,13.06
+"income: Less than $25,000",income,"Less than $25,000",410,5116.24,12.48,3.98
+decile: 9,decile,9,284,4840.55,17.04,20.69
+decile: 7,decile,7,284,4680.83,16.48,8.01
+order_freq: 5 - 10 times per month,order_freq,5 - 10 times per month,811,4446.3,5.48,0.66
+"income: $75,000 - $99,999",income,"$75,000 - $99,999",437,4288.74,9.81,1.69
+decile: 6,decile,6,284,4144.44,14.59,4.95
+"education: Graduate or professional degree (MA, MS, MBA, PhD, JD, MD, DDS, etc)",education,"Graduate or professional degree (MA, MS, MBA, PhD, JD, MD, DDS, etc)",470,4121.82,8.77,1.28
+race: asian,race,asian,287,3585.31,12.49,2.65
+"income: $100,000 - $149,999",income,"$100,000 - $149,999",431,3527.49,8.18,1.08
+age: 45 - 54 years,age,45 - 54 years,392,3382.77,8.63,1.33
+decile: 5,decile,5,285,3136.99,11.01,2.71
+state: California,state,California,295,3028.34,10.27,1.86
+decile: 10,decile,10,284,3020.99,10.64,33.87
+race: black,race,black,253,2847.75,11.26,2.45
+decile: 4,decile,4,285,2198.05,7.71,1.44
+"income: $150,000 or more",income,"$150,000 or more",267,2156.21,8.08,0.97
+state: Texas,state,Texas,211,2079.44,9.86,1.58
+age: 55 - 64 years,age,55 - 64 years,201,2038.45,10.14,1.61
+state: New York,state,New York,182,2033.05,11.17,2.16
+state: Florida,state,Florida,205,1857.61,9.06,1.71
+state: Pennsylvania,state,Pennsylvania,152,1601.47,10.54,2.18
+state: Ohio,state,Ohio,133,1299.88,9.77,1.81
+decile: 3,decile,3,285,1262.9,4.43,0.62
+state: Illinois,state,Illinois,125,1251.26,10.01,1.87
+state: Michigan,state,Michigan,98,1146.36,11.7,2.26
+state: North Carolina,state,North Carolina,104,1002.16,9.64,1.49
+gender: Other,gender,Other,73,961.83,13.18,2.93
+state: Georgia,state,Georgia,94,787.39,8.38,1.37
+race: other_race,race,other_race,72,740.15,10.28,2.39
+race: amerindian,race,amerindian,69,722.86,10.48,2.28
+age: 65 and older,age,65 and older,88,713.54,8.11,1.59
+decile: 2,decile,2,285,576.35,2.02,0.2
+order_freq: More than 10 times per month,order_freq,More than 10 times per month,211,549.86,2.61,0.18
+decile: 1,decile,1,285,142.54,0.5,0.03
