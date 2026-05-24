@@ -17,6 +17,9 @@
 ## Priority 1 — lands the 30-second story
 
 ### ☐ 1. Add a "so what" caption under every panel
+
+> **v2 status (partial):** Concentration only; others skipped due to layout constraints (see commit msg).
+
 On the **dashboard**, drag a **Text** object from the left Objects pane to the area
 directly under each sheet, then paste the matching caption. Format each text object:
 **italic, 9.5 pt, color `#555555`**.
@@ -28,19 +31,19 @@ directly under each sheet, then paste the matching caption. Format each text obj
 | RaR by Decile | `So what: revenue is at the top, but risk is in the middle — mid-deciles 6–9 carry 65% of RaR on 13% of GMV.` |
 | Scale × Growth | `So what: Home & H&PC are the cleanest INVEST — high growth that new customers actually enter through.` |
 
-### ☐ 2. Label every bubble on the Scale × Growth scatter
+### ☑️ 2. Label every bubble on the Scale × Growth scatter
 Open the **Scale × Growth** worksheet → Data pane → drag **Super Category** onto the
 **Label** shelf in the Marks card. Click **Label** → set alignment **Center**, font
 **7.5–8 pt**, color `#2c3e50`. (Tooltip already carries the full info; the label is
 for at-a-glance readability.)
 
-### ☐ 3. Show "+387%"-style inline labels on the Over-Index bars
+### ☑️ 3. Show "+387%"-style inline labels on the Over-Index bars
 Open the **Over-Index** worksheet → drag **Over Index Pct** onto the **Label** shelf
 in the Marks card → click that pill → **Format → Numbers → Custom** → enter
 `+#,##0"%"`. Set Label alignment **End of bar**, font 8.5 pt, color `#2c3e50`. Bars
 will now display `+387%`, `+154%`, etc.
 
-### ☐ 4. Hide the internal calc-field legends on the dashboard
+### ☑️ 4. Hide the internal calc-field legends on the dashboard
 Back on the **dashboard**, find the two legend cards on the right that read
 **"Top driver — False / True"** and **"Mid-tier — False / True"**. These are
 internal calc fields whose meaning is already conveyed by color. Click the small
