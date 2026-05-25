@@ -16,7 +16,7 @@
 SELECT
  d.household_id,
  d.total_gmv,
- d.n_orders,
+ d.n_line_items,
  d.avg_order_value,
  d.decile,
  s."Q-demos-age" AS age,

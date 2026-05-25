@@ -29,9 +29,20 @@ WITH user_orders AS (
 SELECT
  household_id,
  SUM(line_gmv) AS total_gmv,
- COUNT(*) AS n_orders,
+ -- pre_cutoff_gmv: GMV summed only up to the Layer 2 feature cutoff (2022-07-01).
+ -- Used by sql/02 for decile assignment to prevent outcome-window leakage:
+ -- assigning deciles on full-period total_gmv would let Q3 2022 spending (the
+ -- Layer 2 outcome window) partly determine segment membership.
+ SUM(CASE WHEN order_date < TIMESTAMP '2022-07-01' THEN line_gmv ELSE 0 END)
+ AS pre_cutoff_gmv,
+ -- n_line_items: the raw data is one row per purchased product, so COUNT(*)
+ -- counts line items, not distinct shopping carts. Renamed from n_orders for
+ -- accuracy (the source data does not carry an order_id field to dedupe carts).
+ COUNT(*) AS n_line_items,
  MIN(order_date) AS first_purchase_date,
  MAX(order_date) AS last_purchase_date,
+ -- avg_order_value: kept as the recognizable AOV metric name; granularity here
+ -- is per line-item (see n_line_items note above).
  SUM(line_gmv) / NULLIF(COUNT(*), 0) AS avg_order_value
 FROM user_orders
 GROUP BY 1

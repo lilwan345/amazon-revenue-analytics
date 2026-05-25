@@ -16,11 +16,18 @@
 -- super-category so Layer 3 GMV totals reconcile against Layer 1 panel-GMV.
 
 WITH purchases_capped AS (
+    -- Date handling note: sql/01 and sql/05 require explicit STRPTIME because
+    -- they read from the `purchases` VIEW (which keeps "Order Date" as VARCHAR
+    -- to surface the silent-NULL CAST trap). This file is different -- it reads
+    -- raw_csv directly via read_csv_auto, which DuckDB type-infers M/D/YY into
+    -- DATE correctly. So a DATE comparison + DATE-typed EXTRACT(YEAR FROM ...)
+    -- here is safe. Reconciliation: rollup total = $24,443,100 exactly matches
+    -- Layer 1's panel total (asserted in notebook 03 cell 2).
     SELECT
-        "Survey ResponseID" AS household_id,
-        "Order Date"        AS order_date,
-        EXTRACT(YEAR FROM "Order Date") AS yr,
-        "Category"          AS raw_category,
+        "Survey ResponseID"                    AS household_id,
+        "Order Date"                           AS order_date,
+        EXTRACT(YEAR FROM "Order Date")        AS yr,
+        "Category"                             AS raw_category,
         "Purchase Price Per Unit" * "Quantity" AS line_gmv
     FROM read_csv_auto('data/raw/amazon-purchases.csv')
     WHERE "Order Date" < DATE '2023-01-01'

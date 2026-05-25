@@ -17,7 +17,7 @@
 --   household_id
 --   gmv_trailing_12m                     -- recent  (2021-07-01, 2022-06-30]
 --   gmv_trailing_24m_lag12m              -- historical (2020-07-01, 2021-06-30]
---   orders_trailing_12m
+--   line_items_trailing_12m
 --   aov_trailing_12m
 --   n_distinct_categories_trailing_12m
 --   last_order_date                      -- for recency_days computation in Polars
@@ -45,7 +45,9 @@ trailing_12m AS (
     SELECT
         household_id,
         SUM(line_gmv)                  AS gmv_trailing_12m,
-        COUNT(*)                       AS orders_trailing_12m,
+        -- COUNT(*) counts purchase line items (one row per product purchased);
+        -- raw data has no order_id to dedupe carts, so this is line-item count.
+        COUNT(*)                       AS line_items_trailing_12m,
         SUM(line_gmv) / NULLIF(COUNT(*), 0) AS aov_trailing_12m,
         COUNT(DISTINCT category)       AS n_distinct_categories_trailing_12m
     FROM walk_forward_filter
@@ -78,7 +80,7 @@ all_households AS (
 SELECT
     a.household_id,
     COALESCE(t12.gmv_trailing_12m,                       0.0) AS gmv_trailing_12m,
-    COALESCE(t12.orders_trailing_12m,                    0)   AS orders_trailing_12m,
+    COALESCE(t12.line_items_trailing_12m,                0)   AS line_items_trailing_12m,
     COALESCE(t12.aov_trailing_12m,                       0.0) AS aov_trailing_12m,
     COALESCE(t12.n_distinct_categories_trailing_12m,     0)   AS n_distinct_categories_trailing_12m,
     COALESCE(t24.gmv_trailing_24m_lag12m,                0.0) AS gmv_trailing_24m_lag12m,

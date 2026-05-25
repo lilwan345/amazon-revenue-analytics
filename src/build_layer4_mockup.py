@@ -38,7 +38,7 @@ def panel_concentration(ax):
     ax.set_xlim(0, 100); ax.set_ylim(0, 100)
     ax.set_xlabel("Cumulative % of households"); ax.set_ylabel("Cumulative % of GMV")
     ax.set_title("Revenue Concentration  ·  Lorenz + Gini", loc="left", fontweight="bold")
-    ax.annotate("Top decile = 36.2% of GMV\nGini = 0.529", xy=(90, 64), xytext=(40, 78),
+    ax.annotate("Top decile = 36.0% of GMV\nGini = 0.529", xy=(90, 64), xytext=(40, 78),
                 fontsize=9, color=vu.COLOR_ACCENT,
                 arrowprops=dict(arrowstyle="->", color=vu.COLOR_ACCENT, lw=1))
     so_what(ax, "So what: concentration sits at the top — but the long tail still matters "
@@ -60,7 +60,7 @@ def panel_demographic(ax):
     ax.set_xlabel("Top-decile over-index vs panel (%)")
     ax.set_title("Demographic Over-Index  ·  Top 10% vs panel", loc="left", fontweight="bold")
     ax.margins(x=0.18)
-    so_what(ax, "So what: heavy cadence (>10x/mo) over-indexes +387% — engagement, "
+    so_what(ax, "So what: heavy cadence (>10x/mo) over-indexes +373% — engagement, "
                 "not affluence, defines the top decile.")
 
 
@@ -71,11 +71,11 @@ def panel_rar(ax):
     ax.set_xticks(range(1, 11))
     ax.set_xlabel("GMV decile (1 = top spenders)"); ax.set_ylabel("% of panel revenue-at-risk")
     ax.set_title("Revenue-at-Risk by Decile  ·  Q3 drop-off", loc="left", fontweight="bold")
-    ax.annotate("Mid-deciles 6-9\n= 65% of RaR", xy=(7.5, r.filter(pl.col("decile") == 8)["panel_share_pct"][0]),
+    ax.annotate("Mid-deciles 6-9\n= 64% of RaR", xy=(7.5, r.filter(pl.col("decile") == 8)["panel_share_pct"][0]),
                 xytext=(2.4, r["panel_share_pct"].max() * 0.8), fontsize=9, color=vu.COLOR_ACCENT,
                 arrowprops=dict(arrowstyle="->", color=vu.COLOR_ACCENT, lw=1))
     so_what(ax, "So what: revenue is concentrated at the top, but risk is in the middle — "
-                "65% of RaR on 13% of GMV.")
+                "64% of RaR on 13% of GMV.")
 
 
 def panel_scale_growth(ax):

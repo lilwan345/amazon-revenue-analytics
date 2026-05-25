@@ -48,13 +48,13 @@ This project answers each question with a dedicated analytical layer.
 
 ## The Answer
 
-**Layer 1 — concentration.** Within this 2,846-household consenting panel, **the top decile drives 36.2% of GMV** (top 20%: 55.2%; Gini = 0.529). That is meaningful concentration, but well short of a classic 80/20 split — the long tail still matters, so the data suggests a dual lens rather than a VIP-only focus.
+**Layer 1 — concentration.** Within this 2,846-household consenting panel, **the top decile drives 36.0% of GMV** (top 20%: 54.9%; Gini = 0.529). That is meaningful concentration, but well short of a classic 80/20 split — the long tail still matters, so the data suggests a dual lens rather than a VIP-only focus.
 
-Decomposing the gap shows it is **~94% purchase frequency, only ~6% basket size**: top-decile households order 11.0× more often (1,222 vs 111 orders) but spend just 1.18× more per order. The data suggests engagement-cadence levers address this driver far more directly than premium-tier upsell — a premium strategy would close only ~6% of the per-household gap.
+Decomposing the gap shows it is **~94% purchase frequency, only ~6% basket size**: top-decile households make 10.9× more purchases (1,224 vs 112 line-item purchases) but spend just 1.18× more per purchase. The data suggests engagement-cadence levers address this driver far more directly than premium-tier upsell — a premium strategy would close only ~6% of the per-household gap.
 
-The strongest demographic signal is cadence, not affluence: households shopping more than 10 times per month over-index **+387% [CI: +324%, +457%]**, dwarfing $150K+ income (+154%). And concentration actually *fell* during COVID (Δ Gini = -0.039) while panel GMV nearly doubled — the surge was mass-market expansion, not VIP-only concentration.
+The strongest demographic signal is cadence, not affluence: households shopping more than 10 times per month over-index **+373% [CI: +308%, +443%]**, dwarfing $150K+ income (+143%). And concentration actually *fell* during COVID (Δ Gini = -0.039) while panel GMV nearly doubled — the surge was mass-market expansion, not VIP-only concentration.
 
-**Layer 2 — revenue concentration is at the top, but revenue-at-risk is in the middle.** Layer 1 showed the top decile's edge is ~94% purchase-frequency *cadence*. If cadence is the moat, it is also a stability proxy — so forward-looking risk should surface where cadence is least stable, which is not the top. The data bears this out: top decile drives 36.2% of GMV but only **0.5% of forward-looking RaR** ($143 of $29,148 panel total). Bottom decile contributes 0.5% of GMV but carries **10.4% of RaR** ($3,021) — a **21x asymmetry** between best-and-worst-case forward stability. Mid-deciles (6-9) carry **65% of RaR while accounting for only 13% of GMV** (5x amplification). The data suggests a reallocation of retention budget from VIP defense to mid-tier engagement.
+**Layer 2 — revenue concentration is at the top, but revenue-at-risk is in the middle.** Layer 1 showed the top decile's edge is ~94% purchase-frequency *cadence*. If cadence is the moat, it is also a stability proxy — so forward-looking risk should surface where cadence is least stable, which is not the top. The data bears this out: top decile drives 36.0% of GMV but only **0.5% of forward-looking RaR** ($157 of $29,148 panel total). Bottom decile contributes 0.5% of GMV but carries **10.5% of RaR** ($3,055) — a **~19x asymmetry** between best-and-worst-case forward stability. Mid-deciles (6-9) carry **64% of RaR while accounting for only 13% of GMV** (~5x amplification). The data shows mid-tier RaR exposure is materially larger than top-tier exposure on a panel-share basis.
 
 [![Decile RaR ladder preview](outputs/figures/layer2/decile_rar_ladder.png)](outputs/figures/layer2/decile_rar_ladder.png)
 
@@ -138,7 +138,7 @@ A naïve BCG read says "invest in INVEST, harvest HARVEST." Layer 3 adds a secon
 
 Folding Layer 1 deciles + Layer 2 RaR back in per super-category (D1 GMV share, mid-decile RaR, household breadth) is what makes the matrix actionable:
 
-- **Pet** has the highest D1 GMV concentration (39.9% from top decile) and lowest mid-decile RaR exposure (9.6%). With its 0.51 gateway lift, the data suggests Pet behaves as a VIP-anchored loyalty category — not a RaR-mitigation target, despite landing in BET-small on Scale × Growth alone. One caveat on this reading: a high D1 GMV share can reflect either category loyalty (heavy users repeat-buy) or niche-ness (a small buyer pool mechanically concentrates share). Cleanly separating the two would require intra-decile repeat-purchase frequency, which is not computed here — so the loyalty interpretation is directional, and the niche alternative is not fully ruled out.
+- **Pet** has high D1 GMV concentration (39.9% from top decile — second only to Auto, Tools & Outdoor at 40.5%) and the lowest mid-decile GMV share (9.6%). With its 0.51 gateway lift, the data suggests Pet behaves as a VIP-anchored loyalty category — not a RaR-mitigation target, despite landing in BET-small on Scale × Growth alone. One caveat on this reading: a high D1 GMV share can reflect either category loyalty (heavy users repeat-buy) or niche-ness (a small buyer pool mechanically concentrates share). Cleanly separating the two would require intra-decile repeat-purchase frequency, which is not computed here — so the loyalty interpretation is directional, and the niche alternative is not fully ruled out.
 - **Books** has the lowest D1 GMV concentration (26.8%) and broadest panel reach (87.7% of households). It's the closest super-category to a broad-base retention anchor — so the naïve "HARVEST Books" read would hit mid-decile households Layer 2 flagged as carrying 65% of panel RaR.
 
 Full crosswalk parquet + Layer 3-specific limitations (sub-category granularity, gateway lift < 1.0 by construction, no cost-side data) are in [METHODOLOGY.md](METHODOLOGY.md) and the Limitations below.
@@ -156,7 +156,7 @@ A single-screen Tableau dashboard folds the three layers back into the finance-s
 | Panel | Finding (the "so what") |
 |---|---|
 | **Revenue Concentration** — Lorenz + Gini | Concentration sits at the top — but the long tail still matters (top 20% = 55%, not 80%). |
-| **Demographic Over-Index** — top 10% vs panel | Heavy cadence (>10×/mo) over-indexes +387% — engagement, not affluence, defines the top decile. |
+| **Demographic Over-Index** — top 10% vs panel | Heavy cadence (>10×/mo) over-indexes +373% — engagement, not affluence, defines the top decile. |
 | **Revenue-at-Risk by Decile** — Q3 drop-off | Revenue is at the top, but risk is in the middle — mid-deciles 6–9 carry 65% of RaR on 13% of GMV. |
 | **Growth Allocation** — Scale × Growth | Home & H&PC are the cleanest INVEST — high growth that new customers actually enter through. |
 
