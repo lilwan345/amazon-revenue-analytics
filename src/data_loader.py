@@ -114,7 +114,7 @@ def probe_date_format() -> None:
     """Diagnostic: print Order Date raw samples + parse rates for 3 candidate formats.
 
     Used once during setup. After Leo confirms which format is correct, the
-    chosen STRPTIME format string is wired into sql/01_user_gmv_capped.sql (and
+    chosen STRPTIME format string is wired into sql/01_user_gmv_cohort_dated.sql (and
     any future SQL that filters or aggregates on Order Date).
     """
     bar = "=" * 72
@@ -191,7 +191,7 @@ def probe_date_format() -> None:
 
     con.close()
     print("\n" + bar)
-    print("Decision needed: pick the STRPTIME format for sql/01_user_gmv_capped.sql.")
+    print("Decision needed: pick the STRPTIME format for sql/01_user_gmv_cohort_dated.sql.")
     print("Do NOT edit sql/ files or load_purchases() parsing until Leo confirms.")
     print(bar)
 

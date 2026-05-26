@@ -1,6 +1,9 @@
--- sql/01_user_gmv_capped.sql
+-- sql/01_user_gmv_cohort_dated.sql
 --
--- User-level GMV aggregation with cohort cap at 2023-01-01.
+-- User-level GMV aggregation with cohort DATE cap at 2023-01-01.
+-- ("cohort_dated", not "capped" — the cap is a date filter, NOT GMV-value
+-- winsorization. No per-user GMV winsorization is applied anywhere in this
+-- pipeline; headline concentration metrics measure the actual tail.)
 --
 -- Expects a `purchases` view (registered by src.data_loader.get_duckdb_conn():
 -- CREATE VIEW purchases AS SELECT * FROM
@@ -24,7 +27,12 @@ WITH user_orders AS (
  STRPTIME("Order Date", '%-m/%-d/%y') AS order_date,
  "Purchase Price Per Unit" * "Quantity" AS line_gmv
  FROM purchases
+ -- Defensive NULL / non-positive filters: the current raw data has zero such
+ -- rows (verified across all 1,048,575 transactions), but guarding here prevents
+ -- silent row corruption if the upstream dataset changes between releases.
  WHERE STRPTIME("Order Date", '%-m/%-d/%y') < TIMESTAMP '2023-01-01'
+   AND "Purchase Price Per Unit" IS NOT NULL AND "Purchase Price Per Unit" > 0
+   AND "Quantity" IS NOT NULL AND "Quantity" > 0
 )
 SELECT
  household_id,

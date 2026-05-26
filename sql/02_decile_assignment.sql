@@ -2,7 +2,7 @@
 --
 -- Decile assignment using NTILE(10) on PRE-CUTOFF user-level GMV (pre_cutoff_gmv,
 -- summed only through 2022-06-30). Decile 1 = top 10%; decile 10 = bottom 10%.
--- Reads the cohort-capped per-household table from sql/01_user_gmv_capped.sql.
+-- Reads the cohort-date-capped per-household table from sql/01_user_gmv_cohort_dated.sql.
 --
 -- Why pre_cutoff_gmv (not total_gmv): Layer 2 RaR groups Q3 2022 results by these
 -- deciles. Using full-period total_gmv to assign deciles would let Q3 2022 spend

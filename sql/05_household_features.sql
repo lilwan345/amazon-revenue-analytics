@@ -32,6 +32,8 @@
 
 WITH walk_forward_filter AS (
     -- The single leakage guard. Every aggregate below reads from this CTE.
+    -- Defensive NULL / non-positive filters mirror sql/01 (zero such rows in
+    -- current data; guards prevent silent corruption if upstream changes).
     SELECT
         "Survey ResponseID"                       AS household_id,
         STRPTIME("Order Date", '%-m/%-d/%y')      AS order_date,
@@ -39,9 +41,12 @@ WITH walk_forward_filter AS (
         "Category"                                AS category
     FROM purchases
     WHERE STRPTIME("Order Date", '%-m/%-d/%y') < TIMESTAMP '2022-07-01'
+      AND "Purchase Price Per Unit" IS NOT NULL AND "Purchase Price Per Unit" > 0
+      AND "Quantity" IS NOT NULL AND "Quantity" > 0
 ),
 trailing_12m AS (
-    -- Recent window: (2021-07-01, 2022-06-30]
+    -- Recent window: [2021-07-01, 2022-07-01) — left-closed, right-open
+    -- (12 calendar months; right edge inherited from walk_forward_filter cutoff).
     SELECT
         household_id,
         SUM(line_gmv)                  AS gmv_trailing_12m,

@@ -48,11 +48,11 @@ This project answers each question with a dedicated analytical layer.
 
 ## The Answer
 
-**Layer 1 — concentration.** Within this 2,846-household consenting panel, **the top decile drives 36.0% of GMV** (top 20%: 54.9%; Gini = 0.529). That is meaningful concentration, but well short of a classic 80/20 split — the long tail still matters, so the data suggests a dual lens rather than a VIP-only focus.
+**Layer 1 — concentration.** Within this 2,846-household consenting panel, **the top decile drives 36.0% of GMV [CI: 34.7%, 37.2%]** (top 20%: 54.9%; Gini = 0.529). That is meaningful concentration, but well short of a classic 80/20 split — the long tail still matters, so the data suggests a dual lens rather than a VIP-only focus.
 
 Decomposing the gap shows it is **~94% purchase frequency, only ~6% basket size**: top-decile households make 10.9× more purchases (1,224 vs 112 line-item purchases) but spend just 1.18× more per purchase. The data suggests engagement-cadence levers address this driver far more directly than premium-tier upsell — a premium strategy would close only ~6% of the per-household gap.
 
-The strongest demographic signal is cadence, not affluence: households shopping more than 10 times per month over-index **+373% [CI: +308%, +443%]**, dwarfing $150K+ income (+143%). And concentration actually *fell* during COVID (Δ Gini = -0.039) while panel GMV nearly doubled — the surge was mass-market expansion, not VIP-only concentration.
+The strongest demographic signal is cadence, not affluence: households shopping more than 10 times per month over-index **+373% [CI: +308%, +443%]** (n=211), dwarfing $150K+ income (+143%, n=267). And concentration actually *fell* during COVID (Δ Gini = -0.039) while panel GMV nearly doubled — the surge was mass-market expansion, not VIP-only concentration.
 
 **Layer 2 — revenue concentration is at the top, but revenue-at-risk is in the middle.** Layer 1 showed the top decile's edge is ~94% purchase-frequency *cadence*. If cadence is the moat, it is also a stability proxy — so forward-looking risk should surface where cadence is least stable, which is not the top. The data bears this out: top decile drives 36.0% of GMV but only **0.5% of forward-looking RaR** ($157 of $29,148 panel total). Bottom decile contributes 0.5% of GMV but carries **10.5% of RaR** ($3,055) — a **~19x asymmetry** between best-and-worst-case forward stability. Mid-deciles (6-9) carry **64% of RaR while accounting for only 13% of GMV** (~5x amplification). The data shows mid-tier RaR exposure is materially larger than top-tier exposure on a panel-share basis.
 
@@ -166,7 +166,8 @@ The image is a static mockup; the interactive version (filters, tooltips) lives 
 
 ## Limitations
 
-- **Consenting subsample, not Amazon's customer base.** All concentration and RaR numbers should be read as "within this 2,846-household panel," never "across Amazon's customers." Selection bias is plausible — people who consent to share purchase data may differ from those who don't. The panel's 87% Q3 activity rate is direct evidence of this selection-bias direction: the panel is more engaged than the broader Amazon population.
+- **Consenting subsample, not Amazon's customer base.** All concentration and RaR numbers should be read as "within this 2,846-household panel," never "across Amazon's customers." Selection bias is plausible — people who consent to share purchase data may differ from those who don't. The panel's 87% Q3 activity rate is direct evidence of this selection-bias direction: the panel is more engaged than the broader Amazon population. Prolific (the survey vendor) recruits a paid online research panel, which skews younger, more digitally engaged, and lower-median-income than Amazon's broader customer base — over-index figures should be read as panel-internal, not extrapolable.
+- **Panel attrition vs purchase attrition are not separable.** A household showing zero GMV in a later quarter could have (a) stopped buying on Amazon or (b) stopped reporting to Prolific. Both manifest identically as zero in this dataset; the cohort cap at 2023-01-01 mitigates the worst of (b) but cannot fully disentangle the two within the analysis window.
 - **Single-quarter outcome window.** Layer 2's `is_dropoff_q3` measures absence of any purchase in 2022-Q3. This is *not* permanent churn — a diagnostic check found that ~30% of households silent for the trailing 12 months reactivate within the next quarter. The terminology used throughout Layer 2 is "Q3 drop-off" or "Q3 inactivity," never "churn," to preserve this distinction.
 - **Cohort cap at 2023-01-01.** Post-2023 data is sparse (22,569 of 1,048,575 rows, ~2.2%) due to participant attrition. Including post-2023 data would right-censor users who simply stopped reporting purchases. **One household excluded:** `R_1d1fnT4sjZABBwe`, single $1.84 order on 2024-08-15 — clearly a late panel joiner with no 2018–2022 activity.
 - **Demographics are a 2021 snapshot.** Income, state, household size are recorded once at survey time. They are not a time series; a household whose income changed between 2018 and 2024 will be misclassified along that dimension.
@@ -187,7 +188,7 @@ amazon-revenue-analytics/
 │   ├── survey.csv                         ← 5,027 respondents × 23 demographics
 │   └── fields.csv                         ← survey column dictionary
 ├── sql/                                   ← canonical SQL aggregations (first-class)
-│   ├── 01_user_gmv_capped.sql             ← Layer 1: user-level GMV, STRPTIME cohort cap
+│   ├── 01_user_gmv_cohort_dated.sql       ← Layer 1: user-level GMV, STRPTIME cohort date cap
 │   ├── 02_decile_assignment.sql           ← Layer 1: NTILE(10) window function
 │   ├── 03_decile_contribution.sql         ← Layer 1: decile × GMV percent rollup
 │   ├── 04_demographic_join.sql            ← Layer 1: decile-tagged table ⨝ survey demographics
@@ -221,7 +222,7 @@ amazon-revenue-analytics/
 
 - **SQL:** DuckDB (in-process, reads CSV / Parquet directly — no separate database)
 - **Python:** Polars (1M-row aggregation), Pandas (survey-side joins), NumPy (bootstrap)
-- **Stats / ML:** NumPy (Lorenz, Gini, bootstrap CIs); scikit-learn (logistic regression, ROC, calibration)
+- **Stats:** NumPy (Lorenz, Gini, bootstrap CIs); scikit-learn (logistic regression, calibration, ROC) — used as decision-support inputs, not as a forecast model
 - **Viz:** matplotlib + seaborn (finance-clean styling, locked palette in `src/viz_utils.py`)
 - **Notebooks:** Jupyter (deliverable format)
 
@@ -236,7 +237,15 @@ python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 # Place amazon-purchases.csv, survey.csv, fields.csv in data/raw/
 # Verify hashes against MANIFEST.md if reproducing exact numbers.
-jupyter notebook notebooks/01_layer1_concentration.ipynb   # then 02_layer2_rar.ipynb
+
+# Option A — run the notebooks top-to-bottom (canonical pipeline):
+jupyter notebook notebooks/01_layer1_concentration.ipynb   # then 02_layer2_rar.ipynb, 03_layer3_allocation.ipynb
+
+# Option B — just rebuild the SQL intermediate parquets so the sql/*.sql
+# files are runnable standalone (without spinning up Jupyter):
+python -m src.build_sql_inputs
+# Then any SQL file works directly, e.g.:
+#   duckdb -c "$(cat sql/02_decile_assignment.sql)"
 ```
 
 Observed runtime: **~5 sec** for Layer 1, **~7 sec** for Layer 2 (both on M-series Mac). Layer 2's full bootstrap pipeline — 1,000 LR re-fits for AUC + coefficient CIs, 50 shuffle-label refits, 51,000 segment-RaR resamples — completes in ~3 sec combined via vectorised NumPy.

@@ -1,7 +1,7 @@
 # MANIFEST — Amazon Revenue Analytics
 
 > Generated and updated incrementally by each layer's notebook.
-> Last updated: 2026-05-25 04:08:55 UTC
+> Last updated: 2026-05-26 02:33:06 UTC
 > Project commit: (uncommitted)
 
 ## Inputs
@@ -21,85 +21,55 @@ Hashes computed via `hashlib.sha256(path.read_bytes()).hexdigest()` -- see
 
 | File | Rows | Cols | Schema | Source |
 |---|---|---|---|---|
-| `user_gmv.parquet` | 2,845 | 7 | household_id, total_gmv, pre_cutoff_gmv, n_line_items, first_purchase_date, last_purchase_date, avg_order_value | sql/01_user_gmv_capped.sql |
+| `user_gmv.parquet` | 2,845 | 7 | household_id, total_gmv, pre_cutoff_gmv, n_line_items, first_purchase_date, last_purchase_date, avg_order_value | sql/01_user_gmv_cohort_dated.sql |
 | `user_gmv_deciles.parquet` | 2,845 | 8 | household_id, total_gmv, pre_cutoff_gmv, n_line_items, avg_order_value, first_purchase_date, last_purchase_date, decile | sql/02_decile_assignment.sql |
 | `decile_contribution.parquet` | 10 | 5 | decile, user_count, decile_gmv, pct_of_total_gmv, cumulative_pct | sql/03_decile_contribution.sql |
 | `concentration_drivers.parquet` | 3 | 5 | metric, top_decile_value, bottom50_value, ratio, log_share | notebook cell (Polars) |
 | `demographic_overindex_with_ci.parquet` | 41 | 10 | dimension, value, pct_in_top10, pct_in_sample, sample_n, overindex_ratio, ci_lower, ci_upper, significant, included_in_report | notebook cell (Polars + NumPy bootstrap) |
 
-### Figures (`outputs/figures/`)
-
-| File | DPI | Size | Purpose |
-|---|---|---|---|
-| `lorenz_curve.png` | (not produced) | -- | Layer 1 hero |
-| `decile_contribution_bar.png` | (not produced) | -- | Layer 1 supporting |
-| `concentration_over_time.png` | (not produced) | -- | Layer 1 conditional time-series |
-
-## Outputs — Layer 2
-
-### Tables (`outputs/tables/`)
-
-| File | Rows | Cols | Schema | Source |
-|---|---|---|---|---|
-| `household_features.parquet` | 2,845 | 9 | household_id, gmv_trailing_12m, gmv_trailing_24m_lag12m, gmv_trend, line_items_trailing_12m, aov_trailing_12m, recency_days, n_distinct_categories_trailing_12m, aov_slope | sql/05_household_features.sql |
-| `q3_outcome.parquet` | 2,845 | 2 | household_id, is_dropoff_q3 | sql/06_q3_outcome.sql |
-| `model_coefficients.parquet` | 8 | 9 | feature, coefficient, ci_lower, ci_upper, actual_sign, expected_sign, expected_note, sign_consistent, ci_crosses_zero | notebook cell (sklearn + bootstrap) |
-| `rar_per_household.parquet` | 2,845 | 6 | household_id, prob_dropoff_q3, prob_active_q3, expected_q3_gmv, dollar_at_risk, decile | notebook cell (Polars) |
-| `rar_by_segment_with_ci.parquet` | 51 | 8 | dimension, value, n_households, rar_total, rar_per_household, rar_share, ci_lower, ci_upper | notebook cell (Polars + bootstrap) |
+> **Cohort reconciliation: 2,846 vs 2,845.** README/narrative reports the panel as *2,846 consenting households* (the raw join of the 5,027-row survey to households with at least one transaction). Layer 1 analysis operates on **2,845** after the 2023-01-01 cohort date cap: one household, `R_1d1fnT4sjZABBwe`, is excluded — it has a single $1.84 order on 2024-08-15 and no 2018–2022 activity, so it falls outside the cohort window. The audit query that surfaces this exclusion lives in `notebooks/01_layer1_concentration.ipynb` (cell 19).
 
 ### Figures (`outputs/figures/`)
 
 | File | DPI | Size | Purpose |
 |---|---|---|---|
-| `decile_rar_ladder.png` | (not produced) | -- | Layer 2 hero — embedded in README |
-| `coefficient_chart.png` | (not produced) | -- | Layer 2 model interpretability |
-| `calibration_curve.png` | (not produced) | -- | Layer 2 model trustworthiness |
-| `roc_curve.png` | (not produced) | -- | Layer 2 ROC supporting visual |
+| `lorenz_curve.png` | (not produced) | -- | Layer 1 hero visual |
+| `decile_contribution_bar.png` | (not produced) | -- | Supporting visual |
+| `concentration_over_time.png` | (not produced) | -- | Conditional time-series visual |
 
-## Code artifacts (both layers)
+### Code artifacts
 
 | File | Purpose |
 |---|---|
-| `sql/01_user_gmv_capped.sql` | Layer 1: user-level GMV, STRPTIME cohort cap |
-| `sql/02_decile_assignment.sql` | Layer 1: NTILE(10) decile assignment |
-| `sql/03_decile_contribution.sql` | Layer 1: decile rollup with running cumulative |
-| `sql/04_demographic_join.sql` | Layer 1: decile ⨝ survey demographics |
-| `sql/05_household_features.sql` | Layer 2: 5 SQL feature aggregates + walk-forward leakage guard |
-| `sql/06_q3_outcome.sql` | Layer 2: `is_dropoff_q3` outcome variable |
+| `sql/01_user_gmv_cohort_dated.sql` | User-level GMV with explicit STRPTIME cohort cap |
+| `sql/02_decile_assignment.sql` | NTILE(10) decile assignment |
+| `sql/03_decile_contribution.sql` | Decile percent rollup with running cumulative |
+| `sql/04_demographic_join.sql` | Decile-tagged household table joined to survey demographics |
 | `src/data_loader.py` | Polars / DuckDB loaders, Order Date format probe |
-| `src/manifest_utils.py` | SHA256 hashing, MANIFEST writer |
-| `src/stats_utils.py` | Gini, Lorenz, bootstrap over-index CI |
+| `src/manifest_utils.py` | SHA256 hashing, input file dataclass, MANIFEST writer |
+| `src/stats_utils.py` | Discrete Gini, Lorenz points, bootstrap over-index CI |
 | `src/viz_utils.py` | Finance-clean matplotlib styling and locked palette |
 | `notebooks/01_layer1_concentration.ipynb` | Layer 1 main analysis notebook |
-| `notebooks/02_layer2_rar.ipynb` | Layer 2 main analysis notebook |
 
 ## Expected Runtime (clean kernel, M-series Mac)
 
 | Notebook | Wall time (observed) | Memory peak |
 |---|---|---|
 | `01_layer1_concentration.ipynb` | ~5 sec | ~2 GB (Polars peak during 1M-row CSV load) |
-| `02_layer2_rar.ipynb` | ~7 sec | ~2 GB (Polars peak during 1M-row CSV load) |
 
-Bootstrap iteration counts:
-- Layer 1 over-index CI: 1,000 iter × 41 (dim, value) pairs = 41K resamples, ~0.5 sec.
-- Layer 2 AUC + coefficient CIs: 1,000 iter × full LR re-fit per iter = 1K LR fits, ~2.5 sec.
-- Layer 2 shuffle-label diagnostic: 50 iter × full LR re-fit per iter, ~0.1 sec.
-- Layer 2 segment-RaR CIs: 1,000 iter × 51 segments = 51K resamples, ~0.2 sec.
+Bootstrap iteration count = 1,000 (seed=42); 41 (dimension, value) pairs x 1,000 iter = 41,000 resamples completed in ~0.5 sec via vectorised NumPy.
 
 ## Reproducibility Notes
 
-- **Random seeds:** All stochastic operations seed=42 (bootstrap, shuffles, model training). Shuffle-label diagnostic uses seed=123 to differentiate from main bootstrap.
-- **Dependency pinning:** See `requirements.txt`. Critical versions: DuckDB ≥ 1.0, Polars ≥ 1.0, scikit-learn ≥ 1.5.
+- **Random seeds:** All stochastic operations seed=42.
+- **Dependency pinning:** See `requirements.txt`. Critical versions: DuckDB >= 1.0, Polars >= 1.0.
 - **Python version:** 3.11+ (developed on 3.13.9).
 - **Order Date parsing:** Raw is `M/D/YY`; all SQL uses `STRPTIME("Order Date", '%-m/%-d/%y')`. Implicit `CAST AS DATE` would silently NULL 71% of rows.
-- **Walk-forward boundary:** Layer 2 features in `sql/05_household_features.sql` are filtered at the SQL level to `Order Date < 2022-07-01`. Outcome in `sql/06_q3_outcome.sql` reads strictly post-cutoff data. The two files are the only places that touch their respective time windows. Shuffle-label diagnostic empirically validates no leakage (median AUC = 0.54, max = 0.57 across 50 shuffles, well below the 0.60 leakage-suspicion threshold).
 - **Data versioning:** Source CSVs are not committed (gitignored).
 
 ## Changelog
 
 | Date | Layer | Change |
 |---|---|---|
-| 2026-05-17 | 1 | Initial MANIFEST: input CSVs hashed during the setup sanity check |
-| 2026-05-17 | 1 | Added Layer 1 outputs section: 5 parquet tables, 3 figures |
-| 2026-05-18 | 1 | MIT LICENSE added; repo pushed to GitHub |
-| 2026-05-25 | 2 | Added Layer 2 outputs section: 5 parquet tables, 5 figures, 2 new SQL files |
+| 2026-05-26 | 1 | Initial MANIFEST: input CSVs hashed during the setup sanity check |
+| 2026-05-26 | 1 | Added Layer 1 outputs section: 5 parquet tables, 3 figures, 9 code artifacts |
