@@ -33,9 +33,9 @@ Hashes computed via `hashlib.sha256(path.read_bytes()).hexdigest()` -- see
 
 | File | DPI | Size | Purpose |
 |---|---|---|---|
-| `lorenz_curve.png` | (not produced) | -- | Layer 1 hero visual |
-| `decile_contribution_bar.png` | (not produced) | -- | Supporting visual |
-| `concentration_over_time.png` | (not produced) | -- | Conditional time-series visual |
+| `lorenz_curve.png` | 300 | 262 KB | Layer 1 hero visual (README banner) |
+| `decile_contribution_bar.png` | 300 | 218 KB | Decile GMV contribution bars |
+| `concentration_over_time.png` | 300 | 299 KB | 2018-2022 Gini time series |
 
 ### Code artifacts
 
