@@ -11,7 +11,7 @@
 
 Three finance questions on a 2,846-household U.S. Amazon panel (2018–2022, ~1.05M transactions): where revenue concentrates, what is at risk next quarter, and which categories deserve incremental budget.
 
-The short version — concentration sits at the top (the top 10% of households drive 36% of GMV), forward-looking risk sits in the middle (mid-tier deciles carry 65% of next-quarter revenue-at-risk while the top decile carries 0.5%), and growth runs in two lanes (some categories grow by acquiring new households, others by deepening existing ones).
+The short version — concentration sits at the top (the top 10% of households drive 36% of GMV), forward-looking risk sits in the middle (mid-tier deciles carry 64% of next-quarter revenue-at-risk while the top decile carries 0.5%), and growth runs in two lanes (some categories grow by acquiring new households, others by deepening existing ones).
 
 Method is SQL-first (DuckDB) with a Polars cross-check on every aggregation, bootstrap 95% CIs on every headline ratio, and a cross-layer crosswalk that folds the concentration and risk findings into the category view. Detailed findings, methodology, and limitations below.
 
@@ -73,7 +73,7 @@ SQL-first analysis (DuckDB) on ~1.05M Amazon transactions, cohort-capped at 2023
 
 ## The Caveat
 
-The 2,846 households are a **consenting subsample** of 5,027 Prolific prescreen respondents — not a random sample of Amazon's broader customer base. The panel's 87% Q3 activity rate is a **selection-bias upper bound** on engagement. Revenue-at-risk (RaR) here means the expected GMV exposure when a household's modeled probability of Q3 inactivity is applied to its expected Q3 spend — a single-quarter decision-support exposure, not a claim of permanent revenue loss. Layer 2 RaR magnitudes should therefore be read as upper bounds: the analytical framework (propensity model + segment-level aggregation + bootstrap CIs) generalizes, but absolute dollars require re-validation on production cohorts before downstream use. Demographics are a 2021 snapshot, not a time series.
+The 2,846 households are a **consenting subsample** of 5,027 Prolific prescreen respondents — not a random sample of Amazon's broader customer base. The panel's 87% Q3 activity rate is a **selection-bias upper bound** on engagement. Revenue-at-risk (RaR) — used here in the **customer-analytics sense** (expected exposure: P(Q3 inactive) × E[Q3 GMV], structurally analogous to credit-risk EL = PD × EAD), **not the capital-markets VaR-tail sense** (where "at risk" implies a distributional tail) — is the expected GMV exposure when a household's modeled probability of Q3 inactivity is applied to its expected Q3 spend. It is a single-quarter decision-support exposure, not a claim of permanent revenue loss or a tail-risk metric. Layer 2 RaR magnitudes should therefore be read as upper bounds: the analytical framework (propensity model + segment-level aggregation + bootstrap CIs) generalizes, but absolute dollars require re-validation on production cohorts before downstream use. Demographics are a 2021 snapshot, not a time series.
 
 ---
 
@@ -139,7 +139,7 @@ A naïve BCG read says "invest in INVEST, harvest HARVEST." Layer 3 adds a secon
 Folding Layer 1 deciles + Layer 2 RaR back in per super-category (D1 GMV share, mid-decile RaR, household breadth) is what makes the matrix actionable:
 
 - **Pet** has high D1 GMV concentration (39.9% from top decile — second only to Auto, Tools & Outdoor at 40.5%) and the lowest mid-decile GMV share (9.6%). With its 0.51 gateway lift, the data suggests Pet behaves as a VIP-anchored loyalty category — not a RaR-mitigation target, despite landing in BET-small on Scale × Growth alone. One caveat on this reading: a high D1 GMV share can reflect either category loyalty (heavy users repeat-buy) or niche-ness (a small buyer pool mechanically concentrates share). Cleanly separating the two would require intra-decile repeat-purchase frequency, which is not computed here — so the loyalty interpretation is directional, and the niche alternative is not fully ruled out.
-- **Books** has the lowest D1 GMV concentration (26.8%) and broadest panel reach (87.7% of households). It's the closest super-category to a broad-base retention anchor — so the naïve "HARVEST Books" read would hit mid-decile households Layer 2 flagged as carrying 65% of panel RaR.
+- **Books** has the lowest D1 GMV concentration (26.8%) and broadest panel reach (87.7% of households). It's the closest super-category to a broad-base retention anchor — so the naïve "HARVEST Books" read would hit mid-decile households Layer 2 flagged as carrying 64% of panel RaR.
 
 Full crosswalk parquet + Layer 3-specific limitations (sub-category granularity, gateway lift < 1.0 by construction, no cost-side data) are in [METHODOLOGY.md](METHODOLOGY.md) and the Limitations below.
 
@@ -157,7 +157,7 @@ A single-screen Tableau dashboard folds the three layers back into the finance-s
 |---|---|
 | **Revenue Concentration** — Lorenz + Gini | Concentration sits at the top — but the long tail still matters (top 20% = 55%, not 80%). |
 | **Demographic Over-Index** — top 10% vs panel | Heavy cadence (>10×/mo) over-indexes +373% — engagement, not affluence, defines the top decile. |
-| **Revenue-at-Risk by Decile** — Q3 drop-off | Revenue is at the top, but risk is in the middle — mid-deciles 6–9 carry 65% of RaR on 13% of GMV. |
+| **Revenue-at-Risk by Decile** — Q3 drop-off | Revenue is at the top, but risk is in the middle — mid-deciles 6–9 carry 64% of RaR on 13% of GMV. |
 | **Growth Allocation** — Scale × Growth | Home & H&PC are the cleanest INVEST — high growth that new customers actually enter through. |
 
 The image is a static mockup; the interactive version (filters, tooltips) lives on Tableau Public. Panel-by-panel build steps and the field spec are in [`tableau/LAYER4_BUILD_GUIDE.md`](tableau/LAYER4_BUILD_GUIDE.md); the dashboard reads from the committed CSV extracts in [`tableau/`](tableau/), regenerated by `src/build_tableau_extracts.py`.
@@ -210,7 +210,7 @@ amazon-revenue-analytics/
 │   ├── LAYER4_BUILD_GUIDE.md              ← click-by-click Tableau Public build
 │   └── *.csv                              ← 6 panel extracts (Lorenz, decile, over-index, RaR×2, scale×growth)
 └── outputs/
-    ├── tables/                            ← 10 parquet tables (gitignored — regenerable)
+    ├── tables/                            ← 10 parquet tables (gitignored — regenerable) + 2 committed taxonomy files (Layer 3)
     └── figures/                           ← 11 PNG figures @ 300 dpi (committed), organized by layer
         ├── layer1/                         ← lorenz_curve, decile_contribution_bar, concentration_over_time
         ├── layer2/                         ← decile_rar_ladder (hero), coefficient_chart, calibration_curve, roc_curve

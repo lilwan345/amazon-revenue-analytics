@@ -38,7 +38,7 @@ Data source: **lorenz_points.csv**
    axis → **Dual Axis** → right-click → **Synchronize Axis**. Set the equality line color
    `#7f8c8d`, dashed, thinner.
 4. Both axes: fix range 0–100. Titles: x "Cumulative % of households", y "Cumulative % of GMV".
-5. Add an **Annotation → Point** near the top-right: *"Top decile = 36.2% of GMV · Gini 0.529."*
+5. Add an **Annotation → Point** near the top-right: *"Top decile = 36.0% of GMV · Gini 0.529."*
 6. **So-what caption (text object on dashboard):** *Concentration sits at the top — but the
    long tail still matters (top 20% = 55%, not 80%).*
 
@@ -53,7 +53,7 @@ Data source: **demographic_overindex.csv**
 5. Label: `over_index_pct`, format `+#,##0"%"`. Axis title: "Top-decile over-index vs panel (%)".
 6. Tidy long labels (e.g. rename "order_freq: More than 10 times per month" → ">10 orders/month",
    "hh_income: $150,000 or more" → "income: $150K+") via **aliases** on the `label` field.
-7. **So-what:** *Heavy cadence (>10×/mo) over-indexes +387% — engagement, not affluence,
+7. **So-what:** *Heavy cadence (>10×/mo) over-indexes +373% — engagement, not affluence,
    defines the top decile.*
 
 ## Sheet 3 — "RaR by Decile" (revenue-at-risk ladder)  → bottom-left
@@ -63,8 +63,8 @@ Data source: **rar_by_decile.csv**
 3. Highlight calc **`Mid-tier`** = `[decile] >= 6 AND [decile] <= 9` → Color (True `#c0392b`).
 4. Tooltip: add `rar_dollars` ($) and `mean_prob_dropoff_pct` (P(Q3 drop-off)). Axis title:
    "% of panel revenue-at-risk"; x "GMV decile (1 = top spenders)".
-5. Annotation: *"Mid-deciles 6–9 = 65% of RaR."*
-6. **So-what:** *Revenue is concentrated at the top, but risk is in the middle — 65% of RaR
+5. Annotation: *"Mid-deciles 6–9 = 64% of RaR."*
+6. **So-what:** *Revenue is concentrated at the top, but risk is in the middle — 64% of RaR
    on 13% of GMV.*  *(Note: outcome is single-quarter "Q3 drop-off," not churn.)*
 
 ## Sheet 4 — "Scale × Growth" (allocation matrix)  → bottom-right

@@ -27,8 +27,8 @@ directly under each sheet, then paste the matching caption. Format each text obj
 | Panel | Caption (paste verbatim) |
 |---|---|
 | Concentration | `So what: concentration sits at the top — but the long tail still matters (top 20% = 55%, not 80%).` |
-| Over-Index | `So what: heavy cadence (>10×/mo) over-indexes +387% — engagement, not affluence, defines the top decile.` |
-| RaR by Decile | `So what: revenue is at the top, but risk is in the middle — mid-deciles 6–9 carry 65% of RaR on 13% of GMV.` |
+| Over-Index | `So what: heavy cadence (>10×/mo) over-indexes +373% — engagement, not affluence, defines the top decile.` |
+| RaR by Decile | `So what: revenue is at the top, but risk is in the middle — mid-deciles 6–9 carry 64% of RaR on 13% of GMV.` |
 | Scale × Growth | `So what: Home & H&PC are the cleanest INVEST — high growth that new customers actually enter through.` |
 
 ### ☑️ 2. Label every bubble on the Scale × Growth scatter
@@ -37,11 +37,11 @@ Open the **Scale × Growth** worksheet → Data pane → drag **Super Category**
 **7.5–8 pt**, color `#2c3e50`. (Tooltip already carries the full info; the label is
 for at-a-glance readability.)
 
-### ☑️ 3. Show "+387%"-style inline labels on the Over-Index bars
+### ☑️ 3. Show "+373%"-style inline labels on the Over-Index bars
 Open the **Over-Index** worksheet → drag **Over Index Pct** onto the **Label** shelf
 in the Marks card → click that pill → **Format → Numbers → Custom** → enter
 `+#,##0"%"`. Set Label alignment **End of bar**, font 8.5 pt, color `#2c3e50`. Bars
-will now display `+387%`, `+154%`, etc.
+will now display `+373%`, `+143%`, etc.
 
 ### ☑️ 4. Hide the internal calc-field legends on the dashboard
 Back on the **dashboard**, find the two legend cards on the right that read
@@ -60,7 +60,7 @@ Open the **Concentration** worksheet → right-click a point on the Lorenz curve
 the upper-right (around 90% population) → **Annotate → Point**. Replace the default
 text with:
 
-`Top decile = 36.2% of GMV  ·  Gini = 0.529`
+`Top decile = 36.0% of GMV  ·  Gini = 0.529`
 
 Format: 9 pt, color `#c0392b` (red accent), light arrow.
 
