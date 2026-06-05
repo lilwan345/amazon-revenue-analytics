@@ -170,7 +170,7 @@ The image is a static mockup; the interactive version (filters, tooltips) lives 
 - **Panel attrition vs purchase attrition are not separable.** A household showing zero GMV in a later quarter could have (a) stopped buying on Amazon or (b) stopped reporting to Prolific. Both manifest identically as zero in this dataset; the cohort cap at 2023-01-01 mitigates the worst of (b) but cannot fully disentangle the two within the analysis window.
 - **Single-quarter outcome window.** Layer 2's `is_dropoff_q3` measures absence of any purchase in 2022-Q3. This is *not* permanent churn — a diagnostic check found that ~30% of households silent for the trailing 12 months reactivate within the next quarter. The terminology used throughout Layer 2 is "Q3 drop-off" or "Q3 inactivity," never "churn," to preserve this distinction.
 - **Cohort cap at 2023-01-01.** Post-2023 data is sparse (22,569 of 1,048,575 rows, ~2.2%) due to participant attrition. Including post-2023 data would right-censor users who simply stopped reporting purchases. **One household excluded:** `R_1d1fnT4sjZABBwe`, single $1.84 order on 2024-08-15 — clearly a late panel joiner with no 2018–2022 activity.
-- **Demographics are a 2021 snapshot.** Income, state, household size are recorded once at survey time. They are not a time series; a household whose income changed between 2018 and 2024 will be misclassified along that dimension.
+- **Demographics are a 2021 snapshot.** Income, state, household size are recorded once at survey time. They are not a time series; a household whose income changed between 2018 and 2022 will be misclassified along that dimension.
 
 ---
 
