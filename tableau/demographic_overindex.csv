@@ -1,42 +1,43 @@
 label,dimension,value,over_index_pct,ci_low_pct,ci_high_pct,pct_in_top10,pct_in_sample,significant,included_in_report
-order_freq: More than 10 times per month,order_freq,More than 10 times per month,373.1,308.0,442.6,35.1,7.4,true,true
-"income: $150,000 or more",income,"$150,000 or more",143.0,98.8,191.3,22.8,9.4,true,true
-"income: $100,000 - $149,999",income,"$100,000 - $149,999",89.9,60.1,123.2,28.8,15.1,true,true
-order_freq: 5 - 10 times per month,order_freq,5 - 10 times per month,78.5,60.4,99.5,50.9,28.5,true,true
-hh_size: 4+,hh_size,4+,51.7,29.0,74.1,36.8,24.3,true,true
-"education: Graduate or professional degree (MA, MS, MBA, PhD, JD, MD, DDS, etc)",education,"Graduate or professional degree (MA, MS, MBA, PhD, JD, MD, DDS, etc)",50.8,20.5,79.0,24.9,16.5,true,true
-age: 55 - 64 years,age,55 - 64 years,49.0,2.0,96.1,10.5,7.1,true,true
-state: California,state,California,48.9,13.3,85.9,15.4,10.4,true,true
-age: 35 - 44 years,age,35 - 44 years,44.2,23.8,66.0,36.1,25.1,true,true
-state: North Carolina,state,North Carolina,44.0,-15.5,113.8,5.3,3.7,false,false
-age: 45 - 54 years,age,45 - 54 years,40.1,11.7,73.0,19.3,13.8,true,true
-state: Illinois,state,Illinois,35.8,-19.3,98.6,6.0,4.4,false,false
-state: Texas,state,Texas,32.5,-9.2,75.4,9.8,7.4,false,false
-race: asian,race,asian,14.8,-17.3,51.2,11.6,10.1,false,false
-"income: $75,000 - $99,999",income,"$75,000 - $99,999",14.2,-12.2,43.8,17.5,15.4,false,false
-state: Ohio,state,Ohio,12.6,-34.9,70.8,5.3,4.7,false,false
-education: Bachelor's degree,education,Bachelor's degree,6.8,-6.2,18.9,47.4,44.4,false,false
-gender: Female,gender,Female,5.8,-4.7,15.9,54.4,51.4,false,false
-race: white,race,white,2.9,-2.0,7.5,84.2,81.9,false,false
-hh_size: 3,hh_size,3,2.7,-19.2,25.8,20.4,19.8,false,false
-hh_size: 2,hh_size,2,-1.4,-17.9,14.1,31.2,31.7,false,false
-gender: Other,gender,Other,-4.3,-69.9,72.4,2.5,2.6,false,false
-state: Georgia,state,Georgia,-4.4,-58.6,56.7,3.2,3.3,false,false
-gender: Male,gender,Male,-5.8,-17.1,6.2,43.2,45.8,false,false
-state: Michigan,state,Michigan,-8.3,-59.2,46.8,3.2,3.4,false,false
-state: Other states,state,Other states,-11.1,-23.5,1.1,38.9,43.8,false,false
-race: amerindian,race,amerindian,-13.2,-71.2,55.6,2.1,2.4,false,false
-race: other_race,race,other_race,-16.8,-73.1,50.5,2.1,2.5,false,false
-state: Florida,state,Florida,-17.2,-50.5,18.8,6.0,7.2,false,false
-"income: $50,000 - $74,999",income,"$50,000 - $74,999",-20.1,-39.3,0.0,16.8,21.1,false,false
-state: Pennsylvania,state,Pennsylvania,-27.8,-66.9,15.2,3.9,5.3,false,false
-age: 25 - 34 years,age,25 - 34 years,-28.3,-41.3,-15.6,25.3,35.3,true,true
-race: black,race,black,-29.0,-56.7,1.3,6.3,8.9,false,false
-education: High school diploma or GED,education,High school diploma or GED,-29.2,-41.2,-15.8,26.7,37.6,true,true
-state: New York,state,New York,-50.6,-79.3,-18.0,3.2,6.4,true,true
-age: 18 - 24 years,age,18 - 24 years,-51.0,-69.6,-31.0,7.7,15.7,true,true
-hh_size: 1 (just me!),hh_size,1 (just me!),-52.2,-67.5,-37.5,11.6,24.2,true,true
-"income: $25,000 - $49,999",income,"$25,000 - $49,999",-54.7,-69.2,-38.8,10.5,23.2,true,true
-age: 65 and older,age,65 and older,-66.0,-100.0,-25.9,1.1,3.1,true,true
-"income: Less than $25,000",income,"Less than $25,000",-78.1,-90.4,-63.4,3.2,14.4,true,true
-order_freq: Less than 5 times per month,order_freq,Less than 5 times per month,-78.1,-84.6,-72.0,14.0,64.1,true,true
+order_freq: More than 10 times per month,order_freq,More than 10 times per month,364.2,322.2,414.1,35.2,7.6,true,true
+"income: $150,000 or more",income,"$150,000 or more",135.2,99.8,170.5,21.7,9.2,true,true
+"income: $100,000 - $149,999",income,"$100,000 - $149,999",73.3,51.4,97.8,27.2,15.7,true,true
+order_freq: 5 - 10 times per month,order_freq,5 - 10 times per month,69.7,54.2,84.7,47.5,28.0,true,true
+age: 35 - 44 years,age,35 - 44 years,45.9,29.9,62.0,36.0,24.7,true,true
+"education: Graduate or professional degree (MA, MS, MBA, PhD, JD, MD, DDS, etc)",education,"Graduate or professional degree (MA, MS, MBA, PhD, JD, MD, DDS, etc)",45.9,25.4,66.9,25.2,17.3,true,true
+age: 45 - 54 years,age,45 - 54 years,44.6,22.0,70.2,19.5,13.5,true,true
+hh_size: 4+,hh_size,4+,44.2,27.4,60.6,36.0,25.0,true,true
+age: 55 - 64 years,age,55 - 64 years,30.9,0.4,62.5,9.7,7.4,true,true
+state: California,state,California,28.6,2.1,57.8,12.9,10.0,true,true
+state: North Carolina,state,North Carolina,26.9,-16.0,75.7,4.8,3.8,false,false
+state: Texas,state,Texas,17.1,-14.4,48.5,8.9,7.6,false,false
+state: Illinois,state,Illinois,11.0,-26.8,50.6,4.8,4.3,false,false
+state: Ohio,state,Ohio,9.5,-28.7,50.7,4.8,4.4,false,false
+"income: $75,000 - $99,999",income,"$75,000 - $99,999",9.1,-9.7,29.5,16.5,15.1,false,false
+hh_size: 3,hh_size,3,5.7,-12.0,22.4,20.7,19.6,false,false
+race: white,race,white,5.0,1.2,8.3,86.3,82.2,true,true
+education: Bachelor's degree,education,Bachelor's degree,4.9,-4.9,14.2,46.3,44.2,false,false
+state: Michigan,state,Michigan,3.6,-36.1,48.5,3.4,3.3,false,false
+gender: Female,gender,Female,1.5,-6.4,8.9,52.3,51.5,false,false
+race: asian,race,asian,1.4,-23.2,26.1,9.7,9.6,false,false
+state: Florida,state,Florida,0.8,-30.5,35.7,6.6,6.5,false,false
+gender: Male,gender,Male,0.4,-8.1,9.6,46.1,46.0,false,false
+hh_size: 2,hh_size,2,-2.0,-14.5,10.2,31.0,31.6,false,false
+state: Georgia,state,Georgia,-6.9,-49.6,38.9,3.0,3.2,false,false
+state: Other states,state,Other states,-7.3,-15.8,2.0,42.1,45.5,false,false
+"income: $50,000 - $74,999",income,"$50,000 - $74,999",-16.3,-30.6,-0.3,17.7,21.2,true,true
+state: Pennsylvania,state,Pennsylvania,-16.4,-46.3,14.9,4.6,5.5,false,false
+education: High school diploma or GED,education,High school diploma or GED,-26.4,-36.7,-16.2,27.2,37.0,true,true
+age: 25 - 34 years,age,25 - 34 years,-27.8,-37.8,-18.3,26.0,36.1,true,true
+race: amerindian,race,amerindian,-28.0,-70.0,21.1,1.6,2.2,false,false
+age: 65 and older,age,65 and older,-29.1,-65.2,10.5,2.2,3.1,false,false
+state: New York,state,New York,-30.1,-59.6,-2.0,4.2,6.0,true,true
+gender: Other,gender,Other,-31.1,-73.7,16.7,1.6,2.3,false,false
+race: black,race,black,-33.1,-54.4,-8.7,6.0,8.9,true,true
+race: other_race,race,other_race,-40.8,-77.7,0.7,1.6,2.7,false,false
+hh_size: 1 (just me!),hh_size,1 (just me!),-48.3,-60.4,-35.8,12.3,23.9,true,true
+"income: $25,000 - $49,999",income,"$25,000 - $49,999",-51.3,-61.8,-39.6,11.5,23.7,true,true
+education: Some high school or less,education,Some high school or less,-56.6,-100.0,13.7,0.4,0.9,false,false
+age: 18 - 24 years,age,18 - 24 years,-57.0,-70.2,-42.4,6.6,15.3,true,true
+"income: Less than $25,000",income,"Less than $25,000",-65.0,-78.7,-50.5,4.8,13.6,true,true
+order_freq: Less than 5 times per month,order_freq,Less than 5 times per month,-73.2,-77.8,-67.9,17.3,64.4,true,true

@@ -3,7 +3,7 @@
 Three entry points used everywhere downstream:
 
   * load_survey()       -> Polars DataFrame of survey.csv (5,027 x 23)
-  * load_purchases()    -> Polars DataFrame of amazon-purchases.csv (~1.05M rows)
+  * load_purchases()    -> Polars DataFrame of amazon-purchases.csv (~1.85M rows)
   * get_duckdb_conn()   -> DuckDB connection with both CSVs registered as views
                           (so sql/*.sql can `SELECT ... FROM purchases / survey` directly)
 
@@ -34,11 +34,11 @@ SEED: Final[int] = 42
 
 # Candidate Order Date formats (Polars chrono / DuckDB STRPTIME both accept these).
 # Probed in this order; first format with >=95% parse rate wins for the loader's
-# print message. Authoritative format selection still happens in the date-format review.
+# print message. The source file is ISO 8601 (YYYY-MM-DD), so ISO is tried first;
+# the M/D/YY fallback only exists to recognize a spreadsheet-reformatted copy.
 _DATE_FORMAT_CANDIDATES: Final[list[tuple[str, str]]] = [
-    ("%-m/%-d/%y", "M/D/YY"),
-    ("%-m/%-d/%Y", "M/D/YYYY"),
     ("%Y-%m-%d", "YYYY-MM-DD (ISO)"),
+    ("%-m/%-d/%y", "M/D/YY"),
 ]
 
 
@@ -66,7 +66,9 @@ def load_purchases(sample: bool = False, n: int = 10_000) -> pl.DataFrame:
         schema_overrides={
             "Order Date": pl.Utf8,
             "Purchase Price Per Unit": pl.Float64,
-            "Quantity": pl.Int64,
+            # Quantity is whole-valued but stored as "1.0" in the source CSV,
+            # so read as Float64 (an Int64 override would fail to parse "1.0").
+            "Quantity": pl.Float64,
         },
     )
     if sample:

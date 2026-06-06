@@ -2,8 +2,8 @@
 --
 -- Left-join the cohort-capped decile-tagged per-household table to the survey
 -- demographics. The survey has 5,027 prescreen respondents; the decile table
--- has 2,845 (consenting + cohort-capped). The join key is `Survey ResponseID`
--- which is unique on the survey side, so this produces exactly 2,845 rows.
+-- has 5,026 (consenting + cohort-capped). The join key is `Survey ResponseID`
+-- which is unique on the survey side, so this produces exactly 5,026 rows.
 --
 -- Survey demographic columns are 100% populated,
 -- so no rows should have NULL demographics after the join.

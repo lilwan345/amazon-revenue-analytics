@@ -9,9 +9,10 @@
 --   construction. Validation: a post-load Polars assertion confirms
 --   `features['last_order_date'].max() < pl.date(2022, 7, 1)`.
 --
--- Date parsing: raw "Order Date" is M/D/YY. Always use
---   STRPTIME("Order Date", '%-m/%-d/%y')
--- not implicit CAST AS DATE (which silently NULLs ~71% of rows).
+-- Date parsing: raw "Order Date" is ISO 8601 (YYYY-MM-DD). Parse it with an
+-- explicit format string:
+--   STRPTIME("Order Date", '%Y-%m-%d')
+-- (explicit parse over the read_csv_auto sniffer -- self-documenting, version-stable).
 --
 -- Output columns (5 SQL-side features + last_order_date for downstream recency):
 --   household_id
@@ -26,7 +27,7 @@
 -- in Polars after loading this table -- they require log / date arithmetic /
 -- trimmed linear regression respectively, which are cleaner in dataframe code.
 --
--- All 2,845 panel households are returned (LEFT JOIN against the cohort).
+-- All panel households are returned (LEFT JOIN against the cohort).
 -- Households inactive in a window have COALESCE'd zeros (by project lock:
 -- panel-internal inactivity treated as legitimate zero by cohort definition).
 
@@ -36,11 +37,11 @@ WITH walk_forward_filter AS (
     -- current data; guards prevent silent corruption if upstream changes).
     SELECT
         "Survey ResponseID"                       AS household_id,
-        STRPTIME("Order Date", '%-m/%-d/%y')      AS order_date,
+        STRPTIME("Order Date", '%Y-%m-%d')      AS order_date,
         "Purchase Price Per Unit" * "Quantity"    AS line_gmv,
         "Category"                                AS category
     FROM purchases
-    WHERE STRPTIME("Order Date", '%-m/%-d/%y') < TIMESTAMP '2022-07-01'
+    WHERE STRPTIME("Order Date", '%Y-%m-%d') < TIMESTAMP '2022-07-01'
       AND "Purchase Price Per Unit" IS NOT NULL AND "Purchase Price Per Unit" > 0
       AND "Quantity" IS NOT NULL AND "Quantity" > 0
 ),
@@ -78,7 +79,7 @@ last_order AS (
     GROUP BY household_id
 ),
 all_households AS (
-    -- All 2,845 Layer 1 cohort households -- LEFT JOIN to retain inactive ones.
+    -- All Layer 1 cohort households -- LEFT JOIN to retain inactive ones.
     SELECT household_id
     FROM read_parquet('outputs/tables/user_gmv_deciles.parquet')
 )

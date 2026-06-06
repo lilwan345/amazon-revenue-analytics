@@ -27,7 +27,7 @@ directly under each sheet, then paste the matching caption. Format each text obj
 | Panel | Caption (paste verbatim) |
 |---|---|
 | Concentration | `So what: concentration sits at the top — but the long tail still matters (top 20% = 55%, not 80%).` |
-| Over-Index | `So what: heavy cadence (>10×/mo) over-indexes +373% — engagement, not affluence, defines the top decile.` |
+| Over-Index | `So what: heavy cadence (>10×/mo) over-indexes +364% — engagement, not affluence, defines the top decile.` |
 | RaR by Decile | `So what: revenue is at the top, but risk is in the middle — mid-deciles 6–9 carry 64% of RaR on 13% of GMV.` |
 | Scale × Growth | `So what: Home & H&PC are the cleanest INVEST — high growth that new customers actually enter through.` |
 
@@ -37,11 +37,11 @@ Open the **Scale × Growth** worksheet → Data pane → drag **Super Category**
 **7.5–8 pt**, color `#2c3e50`. (Tooltip already carries the full info; the label is
 for at-a-glance readability.)
 
-### ☑️ 3. Show "+373%"-style inline labels on the Over-Index bars
+### ☑️ 3. Show "+364%"-style inline labels on the Over-Index bars
 Open the **Over-Index** worksheet → drag **Over Index Pct** onto the **Label** shelf
 in the Marks card → click that pill → **Format → Numbers → Custom** → enter
 `+#,##0"%"`. Set Label alignment **End of bar**, font 8.5 pt, color `#2c3e50`. Bars
-will now display `+373%`, `+143%`, etc.
+will now display `+364%`, `+135%`, etc.
 
 ### ☑️ 4. Hide the internal calc-field legends on the dashboard
 Back on the **dashboard**, find the two legend cards on the right that read
@@ -60,7 +60,7 @@ Open the **Concentration** worksheet → right-click a point on the Lorenz curve
 the upper-right (around 90% population) → **Annotate → Point**. Replace the default
 text with:
 
-`Top decile = 36.0% of GMV  ·  Gini = 0.529`
+`Top decile = 36.0% of GMV  ·  Gini = 0.528`
 
 Format: 9 pt, color `#c0392b` (red accent), light arrow.
 
@@ -68,7 +68,7 @@ Format: 9 pt, color `#c0392b` (red accent), light arrow.
 On the **dashboard**, double-click the title text object and append a second line
 below the main title (or add a separate Text object directly under it):
 
-`Finance Review Dashboard  ·  Q3 2022 Snapshot  ·  2,846 U.S. households (consenting panel)`
+`Finance Review Dashboard  ·  Q3 2022 Snapshot  ·  5,026 U.S. households (consenting panel)`
 
 Format the subtitle: 10 pt, color `#7f8c8d` (muted gray), not bold.
 

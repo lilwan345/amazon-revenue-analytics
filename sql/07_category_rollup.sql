@@ -1,6 +1,6 @@
 -- sql/07_category_rollup.sql
 --
--- Layer 3 — roll up 1,816 raw Amazon browse-node leaf categories into 12
+-- Layer 3 — roll up 1,871 raw Amazon browse-node leaf categories into 11 (+ Other/Unknown)
 -- super-categories via the deterministic taxonomy JSON committed to
 -- outputs/tables/category_taxonomy.json (flattened to CSV at
 -- outputs/tables/category_taxonomy_mapping.csv for SQL JOIN-friendliness).
@@ -16,13 +16,13 @@
 -- super-category so Layer 3 GMV totals reconcile against Layer 1 panel-GMV.
 
 WITH purchases_capped AS (
-    -- Date handling note: sql/01 and sql/05 require explicit STRPTIME because
-    -- they read from the `purchases` VIEW (which keeps "Order Date" as VARCHAR
-    -- to surface the silent-NULL CAST trap). This file is different -- it reads
-    -- raw_csv directly via read_csv_auto, which DuckDB type-infers M/D/YY into
-    -- DATE correctly. So a DATE comparison + DATE-typed EXTRACT(YEAR FROM ...)
-    -- here is safe. Reconciliation: rollup total = $24,443,100 exactly matches
-    -- Layer 1's panel total (asserted in notebook 03 cell 2).
+    -- Date handling note: this file reads the raw CSV directly via read_csv_auto.
+    -- "Order Date" is ISO 8601 (YYYY-MM-DD), which DuckDB's sniffer types as DATE
+    -- unambiguously, so a DATE comparison + EXTRACT(YEAR FROM ...) here is safe
+    -- without an explicit STRPTIME. (sql/01 and sql/05 read the `purchases` VIEW,
+    -- which keeps "Order Date" as VARCHAR, so they parse explicitly.) The rollup
+    -- total reconciles exactly to Layer 1's cohort-capped panel GMV (asserted in
+    -- notebook 03).
     SELECT
         "Survey ResponseID"                    AS household_id,
         "Order Date"                           AS order_date,

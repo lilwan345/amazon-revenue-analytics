@@ -38,7 +38,7 @@ def panel_concentration(ax):
     ax.set_xlim(0, 100); ax.set_ylim(0, 100)
     ax.set_xlabel("Cumulative % of households"); ax.set_ylabel("Cumulative % of GMV")
     ax.set_title("Revenue Concentration  ·  Lorenz + Gini", loc="left", fontweight="bold")
-    ax.annotate("Top decile = 36.0% of GMV\nGini = 0.529", xy=(90, 64), xytext=(40, 78),
+    ax.annotate("Top decile = 36.0% of GMV\nGini = 0.528", xy=(90, 64), xytext=(40, 78),
                 fontsize=9, color=vu.COLOR_ACCENT,
                 arrowprops=dict(arrowstyle="->", color=vu.COLOR_ACCENT, lw=1))
     so_what(ax, "So what: concentration sits at the top — but the long tail still matters "
@@ -60,7 +60,7 @@ def panel_demographic(ax):
     ax.set_xlabel("Top-decile over-index vs panel (%)")
     ax.set_title("Demographic Over-Index  ·  Top 10% vs panel", loc="left", fontweight="bold")
     ax.margins(x=0.18)
-    so_what(ax, "So what: heavy cadence (>10x/mo) over-indexes +373% — engagement, "
+    so_what(ax, "So what: heavy cadence (>10x/mo) over-indexes +364% — engagement, "
                 "not affluence, defines the top decile.")
 
 
@@ -93,7 +93,7 @@ def panel_scale_growth(ax):
     ax.set_title("Growth Allocation  ·  Scale x Growth", loc="left", fontweight="bold")
     ax.text(med_s + 12, ax.get_ylim()[1] * 0.97, f"median ${med_s:.0f}K", fontsize=7.5,
             color=vu.COLOR_MUTED, va="top")
-    so_what(ax, "So what: Home & H&PC are the cleanest INVEST — high growth that new "
+    so_what(ax, "So what: Home & Apparel are the cleanest INVEST — high growth that new "
                 "customers actually enter through.")
 
 
@@ -105,7 +105,7 @@ def main():
     panel_scale_growth(axes[1, 1])
     fig.suptitle("Revenue Concentration, Revenue-at-Risk & Growth Allocation",
                  fontsize=17, fontweight="bold", color=vu.COLOR_PRIMARY, x=0.012, ha="left", y=0.985)
-    fig.text(0.012, 0.952, "Finance Review Dashboard  ·  Q3 2022 Snapshot  ·  2,846 U.S. households "
+    fig.text(0.012, 0.952, "Finance Review Dashboard  ·  Q3 2022 Snapshot  ·  5,026 U.S. households "
              "(consenting panel)", fontsize=10.5, color=vu.COLOR_MUTED, ha="left")
     fig.text(0.012, 0.012, "Static mockup of the Tableau dashboard — build steps in "
              "tableau/LAYER4_BUILD_GUIDE.md; live interactive version linked in README.",

@@ -5,7 +5,7 @@
 --
 -- Output columns:
 -- decile 1..10 (1 = highest-GMV households)
--- user_count households in that decile (~10% of 2,845)
+-- user_count households in that decile (~10% of 5,026)
 -- decile_gmv sum of total_gmv for those households
 -- pct_of_total_gmv decile_gmv / panel total (this is the Pareto headline)
 -- cumulative_pct running sum across deciles 1..d
