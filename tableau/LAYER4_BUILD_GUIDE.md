@@ -38,7 +38,7 @@ Data source: **lorenz_points.csv**
    axis → **Dual Axis** → right-click → **Synchronize Axis**. Set the equality line color
    `#7f8c8d`, dashed, thinner.
 4. Both axes: fix range 0–100. Titles: x "Cumulative % of households", y "Cumulative % of GMV".
-5. Add an **Annotation → Point** near the top-right: *"Top decile = 36.0% of GMV · Gini 0.528."*
+5. Add an **Annotation → Point** near the top-right: *"Top decile = 35.9% of GMV · Gini 0.528."*
 6. **So-what caption (text object on dashboard):** *Concentration sits at the top — but the
    long tail still matters (top 20% = 55%, not 80%).*
 

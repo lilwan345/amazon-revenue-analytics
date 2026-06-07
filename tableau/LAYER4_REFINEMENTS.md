@@ -60,7 +60,7 @@ Open the **Concentration** worksheet → right-click a point on the Lorenz curve
 the upper-right (around 90% population) → **Annotate → Point**. Replace the default
 text with:
 
-`Top decile = 36.0% of GMV  ·  Gini = 0.528`
+`Top decile = 35.9% of GMV  ·  Gini = 0.528`
 
 Format: 9 pt, color `#c0392b` (red accent), light arrow.
 
