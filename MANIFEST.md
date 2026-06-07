@@ -1,7 +1,7 @@
 # MANIFEST — Amazon Revenue Analytics
 
 > Generated and updated incrementally by each layer's notebook.
-> Last updated: 2026-06-06 12:22:16 UTC
+> Last updated: 2026-06-07 02:23:52 UTC
 > Project commit: (uncommitted)
 
 ## Inputs
@@ -103,5 +103,5 @@ Bootstrap iteration counts:
 | 2026-05-17 | 1 | Initial MANIFEST: input CSVs hashed during the setup sanity check |
 | 2026-05-17 | 1 | Added Layer 1 outputs section: 5 parquet tables, 3 figures |
 | 2026-05-18 | 1 | MIT LICENSE added; repo pushed to GitHub |
-| 2026-06-06 | 2 | Added Layer 2 outputs section: 5 parquet tables, 4 figures, 2 new SQL files |
-| 2026-06-06 | 0 | Re-ran full pipeline on the complete Open e-commerce 1.0 file (5,026 cohort households / 1.85M tx) after the prior raw CSV was found spreadsheet-truncated to 2^20-1 rows; added provenance preflight; migrated date parsing M/D/YY -> ISO |
+| 2026-06-07 | 2 | Added Layer 2 outputs section: 5 parquet tables, 4 figures, 2 new SQL files |
+| 2026-06-07 | 0 | Re-ran full pipeline on the complete Open e-commerce 1.0 file (5,026 cohort households / 1.85M tx) after the prior raw CSV was found spreadsheet-truncated to 2^20-1 rows; added provenance preflight; migrated date parsing M/D/YY -> ISO |
