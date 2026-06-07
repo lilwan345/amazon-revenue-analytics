@@ -28,7 +28,7 @@ directly under each sheet, then paste the matching caption. Format each text obj
 |---|---|
 | Concentration | `So what: concentration sits at the top — but the long tail still matters (top 20% = 55%, not 80%).` |
 | Over-Index | `So what: heavy cadence (>10×/mo) over-indexes +364% — engagement, not affluence, defines the top decile.` |
-| RaR by Decile | `So what: revenue is at the top, but risk is in the middle — mid-deciles 6–9 carry 64% of RaR on 13% of GMV.` |
+| RaR by Decile | `So what: revenue is at the top, but risk is in the middle — mid-deciles 6–9 carry 64% of RaR on 14% of GMV.` |
 | Scale × Growth | `So what: Home & H&PC are the cleanest INVEST — high growth that new customers actually enter through.` |
 
 ### ☑️ 2. Label every bubble on the Scale × Growth scatter

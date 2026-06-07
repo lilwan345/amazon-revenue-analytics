@@ -65,7 +65,7 @@ Data source: **rar_by_decile.csv**
    "% of panel revenue-at-risk"; x "GMV decile (1 = top spenders)".
 5. Annotation: *"Mid-deciles 6–9 = 64% of RaR."*
 6. **So-what:** *Revenue is concentrated at the top, but risk is in the middle — 64% of RaR
-   on 13% of GMV.*  *(Note: outcome is single-quarter "Q3 drop-off," not churn.)*
+   on 14% of GMV.*  *(Note: outcome is single-quarter "Q3 drop-off," not churn.)*
 
 ## Sheet 4 — "Scale × Growth" (allocation matrix)  → bottom-right
 Data source: **category_scale_growth.csv**

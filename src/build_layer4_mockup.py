@@ -75,7 +75,7 @@ def panel_rar(ax):
                 xytext=(2.4, r["panel_share_pct"].max() * 0.8), fontsize=9, color=vu.COLOR_ACCENT,
                 arrowprops=dict(arrowstyle="->", color=vu.COLOR_ACCENT, lw=1))
     so_what(ax, "So what: revenue is concentrated at the top, but risk is in the middle — "
-                "64% of RaR on 13% of GMV.")
+                "64% of RaR on 14% of GMV.")
 
 
 def panel_scale_growth(ax):
