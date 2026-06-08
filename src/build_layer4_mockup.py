@@ -38,7 +38,7 @@ def panel_concentration(ax):
     ax.set_xlim(0, 100); ax.set_ylim(0, 100)
     ax.set_xlabel("Cumulative % of households"); ax.set_ylabel("Cumulative % of GMV")
     ax.set_title("Revenue Concentration  ·  Lorenz + Gini", loc="left", fontweight="bold")
-    ax.annotate("Top decile = 36.0% of GMV\nGini = 0.528", xy=(90, 64), xytext=(40, 78),
+    ax.annotate("Top decile = 35.9% of GMV\nGini = 0.528", xy=(90, 64), xytext=(40, 78),
                 fontsize=9, color=vu.COLOR_ACCENT,
                 arrowprops=dict(arrowstyle="->", color=vu.COLOR_ACCENT, lw=1))
     so_what(ax, "So what: concentration sits at the top — but the long tail still matters "
