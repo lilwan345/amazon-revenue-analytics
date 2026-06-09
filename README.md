@@ -11,7 +11,7 @@
 
 Three finance questions on a 5,026-household U.S. Amazon panel (2018–2022, ~1.85M transactions): where revenue concentrates, what is at risk next quarter, and which categories deserve incremental budget.
 
-The short version — concentration sits at the top (the top 10% of households drive 36% of GMV), forward-looking risk sits in the middle (mid-tier deciles carry 64% of next-quarter revenue-at-risk while the top decile carries under 1%), and growth runs in two lanes (some categories grow by acquiring new households, others by deepening existing ones).
+The short version — concentration sits at the top (the top 10% of households drive ~36% of GMV), forward-looking risk sits in the middle (mid-tier deciles carry 64% of next-quarter revenue-at-risk while the top decile carries under 1%), and growth runs in two lanes (some categories grow by acquiring new households, others by deepening existing ones).
 
 Method is SQL-first (DuckDB) with a Polars cross-check on every aggregation, bootstrap 95% CIs on every headline ratio, and a cross-layer crosswalk that folds the concentration and risk findings into the category view. Detailed findings, methodology, and limitations below.
 
