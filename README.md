@@ -11,9 +11,9 @@
 
 Three finance questions on a 5,026-household U.S. Amazon panel (2018–2022, ~1.85M transactions): where revenue concentrates, what is at risk next quarter, and which categories deserve incremental budget.
 
-The short version — concentration sits at the top (the top 10% of households drive ~36% of GMV), forward-looking risk sits in the middle (mid-tier deciles carry 64% of next-quarter revenue-at-risk while the top decile carries under 1%), and growth runs in two lanes (some categories grow by acquiring new households, others by deepening existing ones).
+The short version — concentration sits at the top (the top 10% of households drive ~36% of GMV), forward-looking risk sits in the middle (mid-tier deciles carry 64% of next-quarter revenue-at-risk while the top decile carries under 1%), and growth comes in two kinds (some categories grow by pulling in new households, others by getting existing ones to spend more).
 
-Method is SQL-first (DuckDB) with a Polars cross-check on every aggregation, bootstrap 95% CIs on every headline ratio, and a cross-layer crosswalk that folds the concentration and risk findings into the category view. Detailed findings, methodology, and limitations below.
+Method is SQL-first (DuckDB) with a Polars cross-check on every aggregation, bootstrap 95% CIs on every headline ratio, and a final join that brings the concentration and risk results into the category view. Detailed findings, methodology, and limitations below.
 
 ---
 
@@ -48,13 +48,13 @@ This project answers each question with a dedicated analytical layer.
 
 ## The Answer
 
-**Layer 1 — concentration.** Within this 5,026-household consenting panel, **the top decile drives 35.9% of GMV [CI: 33.6%, 38.3%]** (top 20%: 54.9%; Gini = 0.528). That is meaningful concentration, but well short of a classic 80/20 split — the long tail still matters, so the data suggests a dual lens rather than a VIP-only focus.
+**Layer 1 — concentration.** Within this 5,026-household consenting panel, **the top decile drives 35.9% of GMV [CI: 33.6%, 38.3%]** (top 20%: 54.9%; Gini = 0.528). That is meaningful concentration, but well short of a classic 80/20 split — the long tail still matters — a VIP-only view would miss almost two-thirds of the revenue.
 
-Decomposing the gap shows it is **~95% purchase frequency, only ~5% basket size**: top-decile households make 11.1× more purchases (1,236 vs 111 line-item purchases) but spend just 1.13× more per purchase. The data suggests engagement-cadence levers address this driver far more directly than premium-tier upsell — a premium strategy would close only ~5% of the per-household gap.
+Decomposing the gap shows it is **~95% purchase frequency, only ~5% basket size**: top-decile households make 11.1× more purchases (1,236 vs 111 line-item purchases) but spend just 1.13× more per purchase. In plain terms: getting households to buy more often matters far more than getting them to spend more per order — a premium-upsell strategy would close only ~5% of the per-household gap.
 
 The strongest demographic signal is cadence, not affluence: households shopping more than 10 times per month over-index **+364% [CI: +322%, +414%]** (n=381), dwarfing $150K+ income (+135%, n=463). And concentration actually *fell* during COVID (Δ Gini ≈ -0.04) while panel GMV nearly doubled (2018 $5.5M → 2022 $10.7M) — the surge was mass-market expansion, not VIP-only concentration.
 
-**Layer 2 — revenue concentration is at the top, but revenue-at-risk is in the middle.** Layer 1 showed the top decile's edge is ~95% purchase-frequency *cadence*. If cadence is the moat, it is also a stability proxy — so forward-looking risk should surface where cadence is least stable, which is not the top. The data bears this out: top decile drives 35.9% of GMV but only **0.7% of forward-looking RaR** ($377 of $50,573 panel total). Bottom decile contributes 0.6% of GMV but carries **9.5% of RaR** ($4,795) — a **~13x asymmetry** between best-and-worst-case forward stability. Mid-deciles (6-9) carry **64% of RaR while accounting for only 14% of GMV** (~4.7x amplification). The data shows mid-tier RaR exposure is materially larger than top-tier exposure on a panel-share basis.
+**Layer 2 — revenue concentration is at the top, but revenue-at-risk is in the middle.** Layer 1 showed the top decile's edge is ~95% purchase frequency. Households that buy steadily and often are also the least likely to go quiet — so next-quarter risk should show up where buying is least stable, which is not the top. The data bears this out: top decile drives 35.9% of GMV but only **0.7% of forward-looking RaR** ($377 of $50,573 panel total). Bottom decile contributes 0.6% of GMV but carries **9.5% of RaR** ($4,795) — a **~13x asymmetry** between best-and-worst-case forward stability. Mid-deciles (6-9) carry **64% of RaR while accounting for only 14% of GMV** (~4.7x amplification). The data shows mid-tier RaR exposure is materially larger than top-tier exposure on a panel-share basis.
 
 [![Decile RaR ladder preview](outputs/figures/layer2/decile_rar_ladder.png)](outputs/figures/layer2/decile_rar_ladder.png)
 
@@ -63,17 +63,17 @@ The strongest demographic signal is cadence, not affluence: households shopping 
 [![Calibration curve](outputs/figures/layer2/calibration_curve.png)](outputs/figures/layer2/calibration_curve.png)
 [![Standardized coefficient chart](outputs/figures/layer2/coefficient_chart.png)](outputs/figures/layer2/coefficient_chart.png)
 
-**Layer 3 — naive Scale × Growth lies; the Layer 1+2 cross-layer lens reframes allocation.** Layer 1 located where revenue *is* and Layer 2 located where risk *is*; Layer 3 asks where incremental budget should *go*. Scale × Growth alone would mislead, so the decile structure (Layer 1) and per-household RaR (Layer 2) are folded back into the category view. 11 super-categories (plus an explicit `Other / Unknown` bucket) were rolled up from 1,871 raw Amazon browse-node labels (Claude Opus 4.7 taxonomy, 89% specific-mapped, audit JSON committed). A naive Scale × Growth read would chase the high-growth verticals and harvest the flat ones — but the cross-layer crosswalk reframes them: **the data suggests Pet behaves as VIP-anchored loyalty** (D1 share = 39% of Pet GMV, the lowest mid-decile share at 9.7%, near-lowest acquisition-gateway lift at 0.55), not RaR mitigation. **Books behaves more like a broad-base retention category** (D1 share = 28%, among the lowest; 88% panel breadth; mid-decile GMV share = 18%) — so harvesting it would worsen Layer 2's mid-decile RaR concentration. **The acquisition surface is broad-utility commodity categories** (Electronics 0.88 / H&PC 0.85 / Home 0.85 / Apparel 0.85), not specialty verticals. The data suggests segmenting allocation into three lanes (top-decile retention, mid-decile RaR mitigation, customer acquisition) rather than one growth bet per category.
+**Layer 3 — Scale × Growth alone would mislead; adding Layers 1+2 changes the picture.** Layer 1 located where revenue *is* and Layer 2 located where risk *is*; Layer 3 asks where incremental budget should *go*. To answer that honestly, I join the decile structure (Layer 1) and per-household RaR (Layer 2) back into the category view. 11 super-categories (plus an explicit `Other / Unknown` bucket) were rolled up from 1,871 raw Amazon browse-node labels (Claude Opus 4.7 taxonomy, 89% specific-mapped, audit JSON committed). A Scale × Growth read alone would chase the high-growth categories and harvest the flat ones — but joining in Layers 1+2 tells a different story: **the data suggests Pet behaves as VIP-anchored loyalty** (D1 share = 39% of Pet GMV, the lowest mid-decile share at 9.7%, near-lowest acquisition-gateway lift at 0.55), not RaR mitigation. **Books behaves more like a broad-base retention category** (D1 share = 28%, among the lowest; 88% panel breadth; mid-decile GMV share = 18%) — so harvesting it would worsen Layer 2's mid-decile RaR concentration. **New customers mostly enter through broad everyday categories** (Electronics 0.88 / H&PC 0.85 / Home 0.85 / Apparel 0.85), not specialty verticals. The data suggests splitting the budget three ways — keeping top-decile households, protecting the mid-decile revenue at risk, and acquiring new customers — rather than one growth bet per category.
 
 [![Category allocation matrix preview](outputs/figures/layer3/category_allocation_matrix.png)](outputs/figures/layer3/category_allocation_matrix.png)
 
 ## The Method
 
-SQL-first analysis (DuckDB) on ~1.85M Amazon transactions, cohort-capped at 2023-01-01 due to post-2023 participant attrition. Raw inputs are validated against the published Open e-commerce 1.0 source (5,027 households, >1.8M transactions) by a provenance preflight (`src/validate_data.py`) before any layer runs. **Layer 1:** NTILE(10) decile assignment; Lorenz + Gini for concentration shape; log-decomposition for the frequency-vs-basket driver split; bootstrap 95% CIs (B=1000, seed=42) on demographic over-index ratios. **Layer 2:** logistic regression with a walk-forward feature/outcome split (features as-of 2022-06-30, outcome = 2022-Q3 actuals); SQL-level leakage guard + shuffle-label diagnostic (median AUC 0.53 on shuffled labels, max 0.55 — below the 0.60 leakage-suspicion threshold); bootstrap CIs on AUC, coefficients, and segment-level RaR; AUC and calibration are reported in-sample on the full panel — the shuffle diagnostic substitutes for held-out validation; calibration assessed via reliability diagram across 10 quantile bins (9 of 10 within ±0.05; the high-risk bin underestimates, so RaR is reported as a lower bound). **Layer 3:** Claude Opus 4.7 generates a deterministic 1,871→11 super-category taxonomy (plus an `Other / Unknown` bucket; audit JSON committed, 89% specific-mapped + 50-row spot-check); 4-year CAGR (`(2022/2018)^(1/4) − 1`) over raw growth-rate to avoid COVID-baseline distortion; bootstrap CIs on every metric; cross-layer crosswalk joins Layer 1 decile structure + Layer 2 RaR per household into the allocation matrix. Every core aggregation is cross-validated against a Polars equivalent for byte equality.
+SQL-first analysis (DuckDB) on ~1.85M Amazon transactions, cohort-capped at 2023-01-01 due to post-2023 participant attrition. I validate the raw inputs against the published Open e-commerce 1.0 source (5,027 households, >1.8M transactions) with a preflight script (`src/validate_data.py`) before running any layer. **Layer 1:** NTILE(10) decile assignment; Lorenz + Gini for concentration shape; log-decomposition for the frequency-vs-basket driver split; bootstrap 95% CIs (B=1000, seed=42) on demographic over-index ratios. **Layer 2:** logistic regression with a walk-forward feature/outcome split (features as-of 2022-06-30, outcome = 2022-Q3 actuals); SQL-level leakage guard + shuffle-label diagnostic (median AUC 0.53 on shuffled labels, max 0.55 — below the 0.60 leakage-suspicion threshold); bootstrap CIs on AUC, coefficients, and segment-level RaR; AUC and calibration are reported in-sample on the full panel — the shuffle diagnostic substitutes for held-out validation; calibration assessed via reliability diagram across 10 quantile bins (9 of 10 within ±0.05; the high-risk bin underestimates, so RaR is reported as a lower bound). **Layer 3:** Claude Opus 4.7 generates a deterministic 1,871→11 super-category taxonomy (plus an `Other / Unknown` bucket; audit JSON committed, 89% specific-mapped + 50-row spot-check); 4-year CAGR (`(2022/2018)^(1/4) − 1`) over raw growth-rate to avoid COVID-baseline distortion; bootstrap CIs on every metric; cross-layer crosswalk joins Layer 1 decile structure + Layer 2 RaR per household into the allocation matrix. Every core aggregation is cross-validated against a Polars equivalent for byte equality.
 
 ## The Caveat
 
-The 5,026 households are essentially the **full consenting panel** of 5,027 Prolific prescreen respondents (one dropped by the cohort cap) — not a random sample of Amazon's broader customer base. The panel's 87% Q3 activity rate is a **selection-bias upper bound** on engagement. Revenue-at-risk (RaR) — used here in the **customer-analytics sense** (expected exposure: P(Q3 inactive) × E[Q3 GMV], structurally analogous to credit-risk EL = PD × EAD), **not the capital-markets VaR-tail sense** (where "at risk" implies a distributional tail) — is the expected GMV exposure when a household's modeled probability of Q3 inactivity is applied to its expected Q3 spend. It is a single-quarter decision-support exposure, not a claim of permanent revenue loss or a tail-risk metric. Layer 2 RaR magnitudes should therefore be read as upper bounds: the analytical framework (propensity model + segment-level aggregation + bootstrap CIs) generalizes, but absolute dollars require re-validation on production cohorts before downstream use. Demographics are a 2021 snapshot, not a time series.
+The 5,026 households are essentially the **full consenting panel** of 5,027 Prolific prescreen respondents (one dropped by the cohort cap) — not a random sample of Amazon's broader customer base. The panel's 87% Q3 activity rate is a **selection-bias upper bound** on engagement. Revenue-at-risk (RaR) here means **expected exposure**: each household's modeled probability of going inactive in Q3, times its expected Q3 spend — the same shape as expected loss in credit risk (PD × EAD). It is **not** a VaR-style tail metric, and not a claim of permanent revenue loss; it is a single-quarter exposure estimate. Layer 2 RaR magnitudes should therefore be read as upper bounds: the analytical framework (propensity model + segment-level aggregation + bootstrap CIs) generalizes, but I would re-validate the absolute dollars on a production cohort before using them downstream. Demographics are a 2021 snapshot, not a time series.
 
 ---
 
@@ -115,9 +115,9 @@ Splitting the 11 super-categories along the median scale ($641K) and median CAGR
 | **HARVEST** — low growth × low scale | 3 | Gift Cards & Digital ($499K, 11.9%) · Books & Media ($332K, −0.4%) · Office, Stationery & Crafts ($280K, 23.8%) |
 | At median boundary | 2 | Health, Beauty & Personal Care ($1,361K, 24.2% — at median CAGR) · Toys, Games & Hobbies ($641K, 20.1% — at median scale) |
 
-### The differentiator — high growth ≠ acquisition gateway
+### High growth ≠ where new customers enter
 
-A naïve BCG read says "invest in INVEST, harvest HARVEST." Layer 3 adds a second lens — **cohort acquisition-gateway lift** (new-cohort vs established-cohort category penetration; n=357 vs 4,669). All values are < 1.0, so the **relative ranking is the signal**, not the absolute level.
+A naïve BCG read says "invest in INVEST, harvest HARVEST." Layer 3 adds a second check — **cohort acquisition-gateway lift** (new-cohort vs established-cohort category penetration; n=357 vs 4,669). All values are < 1.0, so the **relative ranking is the signal**, not the absolute level.
 
 [![Category adoption speed](outputs/figures/layer3/category_gateway_lift.png)](outputs/figures/layer3/category_gateway_lift.png)
 
@@ -130,9 +130,9 @@ A naïve BCG read says "invest in INVEST, harvest HARVEST." Layer 3 adds a secon
 **Cross-tabbing the BCG quadrant and the adoption-speed tier produces the operational allocation insight:**
 
 - **Double signal — INVEST × fast-adoption.** Home, Kitchen & Bath and Apparel: high growth that is structurally durable because new customers enter via these categories, not just existing ones spending more — the cleanest INVEST candidates. (Grocery is also INVEST but adopts at a neutral 0.70.)
-- **Loyalty-depth growth — BET-small × low gateway.** Pet and Auto: above-median growth but the weakest new-cohort penetration (0.55 / 0.63) — the data suggests existing-customer deepening, not new-household acquisition. Retention framing, not acquisition.
-- **Stalled acquisition surface — MAINTAIN × fast-adoption.** Electronics has the highest lift of any super-category but below-median growth: a traditional first-purchase category whose growth has plateaued — defensive maintenance, not a growth bet.
-- **Pure defensive — HARVEST.** Books, Gift Cards, and Office. Books is the cleanest structural-decline read — roughly flat growth, low scale, neither acquisition surface nor loyalty anchor.
+- **Loyalty-depth growth — BET-small × low gateway.** Pet and Auto: above-median growth but the weakest new-cohort penetration (0.55 / 0.63) — growth here comes from existing customers buying deeper, not from new households arriving — a retention story, not an acquisition one.
+- **Stalled entry point — MAINTAIN × fast-adoption.** Electronics has the highest lift of any super-category but below-median growth: a traditional first-purchase category whose growth has plateaued — defensive maintenance, not a growth bet.
+- **Pure defensive — HARVEST.** Books, Gift Cards, and Office. Books is the clearest decline story — roughly flat growth, low scale, neither a first-purchase category nor a loyalty anchor.
 
 ### Layer 1+2 cross-layer crosswalk
 
@@ -147,7 +147,7 @@ Full crosswalk parquet + Layer 3-specific limitations (sub-category granularity,
 
 ## Layer 4 — Finance Review Dashboard
 
-A single-screen Tableau dashboard folds the three layers back into the finance-stakeholder view from [The Question](#the-question) — built so the three findings land in a 30-second skim, one "so what" per panel.
+A single-screen Tableau dashboard brings the three layers back together for the stakeholder questions in [The Question](#the-question) — one panel per finding, each with its own takeaway.
 
 [![Finance Review Dashboard](outputs/figures/layer4/dashboard_mockup.png)](https://public.tableau.com/app/profile/leo.wan3084/viz/AmazonFinanceReviewDashboardQ32022/Dashboard1)
 
@@ -223,7 +223,7 @@ amazon-revenue-analytics/
 
 - **SQL:** DuckDB (in-process, reads CSV / Parquet directly — no separate database)
 - **Python:** Polars (1M-row aggregation), Pandas (survey-side joins), NumPy (bootstrap)
-- **Stats:** NumPy (Lorenz, Gini, bootstrap CIs); scikit-learn (logistic regression, calibration, ROC) — used as decision-support inputs, not as a forecast model
+- **Stats:** NumPy (Lorenz, Gini, bootstrap CIs); scikit-learn (logistic regression, calibration, ROC) — used to rank household risk, not to forecast revenue
 - **Viz:** matplotlib + seaborn (finance-clean styling, locked palette in `src/viz_utils.py`)
 - **Notebooks:** Jupyter (deliverable format)
 
@@ -265,3 +265,5 @@ Observed runtime: **~30 sec** for Layer 1, **~45 sec** for Layer 2 on the full ~
 ## Author
 
 Built by **Leo Wan**, BUAI (Business of Artificial Intelligence) program — USC Marshall School of Business & Viterbi School of Engineering. Targeting Summer 2027 BI/DA Analyst internships.
+
+This is my first end-to-end BI project. The part that taught me the most wasn't the modeling — it was discovering midway that my raw CSV had been silently truncated by a spreadsheet at 2²⁰ rows, and having to re-verify every number in the repo afterwards. Feedback welcome via issues.
