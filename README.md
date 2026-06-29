@@ -1,7 +1,7 @@
 # Amazon Revenue Analytics
-*Concentration, Forward-Looking Revenue-at-Risk, and Growth Allocation*
+*Concentration, Revenue-at-Risk, and Growth Allocation*
 
-**A BI framework for finance decision support, built on 5,026 U.S. Amazon households (2018–2022).**
+**Built on 5,026 U.S. Amazon households and ~1.85M purchases (2018–2022).**
 
 [![Lorenz curve preview](outputs/figures/layer1/lorenz_curve.png)](outputs/figures/layer1/lorenz_curve.png)
 
@@ -110,8 +110,6 @@ Build steps and the field spec are in [`tableau/LAYER4_BUILD_GUIDE.md`](tableau/
 ## Limitations
 
 - **Consenting panel, not Amazon's customer base.** Every number is "within this 5,026-household panel," never "across Amazon." People who consent to share purchase data likely differ from those who don't, and the panel's 87% Q3 activity rate is direct evidence it is more engaged than Amazon's base.
-- **Panel attrition vs. purchase attrition are not separable.** A household at zero GMV in a later quarter could have stopped buying on Amazon *or* stopped reporting to the survey vendor, and both look identical here. The 2023-01-01 cohort cap limits the worst of it but cannot fully separate the two.
-- **Single-quarter outcome, not churn.** Layer 2 measures "no purchase in 2022-Q3," not permanent churn. About 28% of households silent for a year reactivate within a quarter, so the wording stays "Q3 drop-off" throughout, never "churn."
 - **Cohort cap at 2023-01-01.** Post-2023 data is thin (~2% of rows) because people dropped out of the panel. If I kept it, someone who just stopped reporting would look like they'd stopped buying, and that's not a fair assumption.
 - **Demographics are a 2021 snapshot.** Income, state, and household size are recorded once, so a household whose income changed across 2018–2022 is misclassified on that dimension.
 
