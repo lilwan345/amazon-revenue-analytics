@@ -13,7 +13,7 @@ Three finance questions on a 5,026-household U.S. Amazon panel (2018–2022, ~1.
 
 The short answers: concentration sits at the top (the top 10% of households drive ~36% of GMV), but next-quarter risk sits in the *middle* (mid-tier deciles carry 64% of revenue-at-risk while the top decile carries under 1%), and category growth comes in two kinds — some categories grow by pulling in new households, others by getting existing ones to spend more.
 
-**Data:** the public [Open e-commerce 1.0](https://doi.org/10.7910/DVN/YGLYDY) dataset (Berke et al., *Scientific Data* 2024) — 5,027 U.S. households who consented to share their Amazon purchase history, hosted on Harvard Dataverse. Method is SQL-first (DuckDB), with a Polars cross-check on every aggregation and bootstrap 95% CIs on every headline number. The full method and audit trail live in **[METHODOLOGY.md](METHODOLOGY.md)**.
+**Data:** the public [Open e-commerce 1.0](https://doi.org/10.7910/DVN/YGLYDY) dataset (Berke et al., *Scientific Data* 2024) — 5,027 U.S. households who consented to share their Amazon purchase history, hosted on Harvard Dataverse. Method is SQL-first (DuckDB), with a Polars cross-check on the totals and bootstrap 95% confidence intervals on the headline numbers. The full method and caveats live in **[METHODOLOGY.md](METHODOLOGY.md)**.
 
 ---
 
@@ -35,7 +35,7 @@ Each question gets its own analytical layer. My role is the decision-support inp
 
 [![Decile RaR ladder preview](outputs/figures/layer2/decile_rar_ladder.png)](outputs/figures/layer2/decile_rar_ladder.png)
 
-*The risk ranking comes from a simple model (logistic regression) that scores each household's chance of going quiet next quarter. It's trained only on data through mid-2022 and tested against what actually happened in Q3 — a real backtest, not hindsight. (Leakage and calibration checks are in [METHODOLOGY.md](METHODOLOGY.md).)*
+*The risk ranking comes from a simple model (logistic regression) that scores each household's chance of going quiet next quarter. It's trained only on data through mid-2022 and tested against what actually happened in Q3 — a real backtest, not hindsight. (How the model is kept from peeking at the future is in [METHODOLOGY.md](METHODOLOGY.md).)*
 
 **Layer 3 — Scale × Growth alone would mislead.** Layer 1 found where revenue *is*, Layer 2 found where risk *is*; Layer 3 asks where new budget should *go*. Eleven super-categories were rolled up from 1,871 raw Amazon category labels (using Claude Opus 4.7 to build the taxonomy; the mapping is committed and spot-checked). A plain Scale × Growth read would just chase the high-growth categories — but folding Layers 1 and 2 back in changes the picture: **Pet looks like a high-growth bet, but its growth is existing-customer loyalty, not new-customer acquisition. Books looks like a "harvest" category, but it is actually broad-base retention** — cutting it would hit exactly the mid-decile households Layer 2 flagged as risky. New customers mostly arrive through everyday categories (Electronics, Health & Personal Care, Home, Apparel), not specialty ones. The takeaway: split the budget three ways — keep the top households, protect the at-risk middle, and acquire through the gateway categories — rather than make one growth bet per category.
 
@@ -43,10 +43,10 @@ Each question gets its own analytical layer. My role is the decision-support inp
 
 ## The Method
 
-One sentence per layer — the full audit trail (leakage checks, calibration, decomposition math, taxonomy audit) is in **[METHODOLOGY.md](METHODOLOGY.md)**:
+One sentence per layer — the full how-and-why (data checks, the risk model, the category grouping) is in **[METHODOLOGY.md](METHODOLOGY.md)**:
 
 - **Foundation.** SQL-first on ~1.85M transactions via DuckDB; every total is double-checked against an equivalent Polars version, and the raw file is validated against the published source before anything runs.
-- **Layer 1.** Rank households into 10 equal groups (`NTILE(10)`), measure concentration with a Lorenz curve + Gini, and split the gap into "buys more often" vs. "bigger baskets." Every headline number carries a bootstrap 95% confidence interval (resample the households 1,000× so the number comes with a margin of error).
+- **Layer 1.** Rank households into 10 equal groups (`NTILE(10)`), measure concentration with a Lorenz curve + Gini, and split the gap into "buys more often" vs. "bigger baskets." Every headline number carries a bootstrap 95% confidence interval (1,000 resamples), so it comes with a margin of error rather than a bare point estimate.
 - **Layer 2.** A simple model (logistic regression) scores each household's chance of going inactive in Q3 2022 — trained only on data through mid-2022, tested on what actually happened (a walk-forward backtest). Revenue-at-risk = that chance × the household's expected Q3 spend.
 - **Layer 3.** A Claude-built grouping of 1,871 raw labels into 11 categories (committed + spot-checked), 4-year CAGR for growth, and a join that folds the Layer 1 groups and Layer 2 risk back into the category view.
 
@@ -85,7 +85,7 @@ The 11 super-categories (plus an explicit `Other / Unknown` bucket) are rolled u
 - **Electronics** is the top entry point but has plateaued — defensive, not a growth bet.
 - **Books** is the clearest decline — but it is also broad-reach (88% of households), so cutting it would hit the at-risk middle from Layer 2.
 
-The gateway-lift tiers, the per-category cross-layer crosswalk, and the Pet "loyalty vs. niche" caveat are in [METHODOLOGY.md](METHODOLOGY.md).
+How new-customer adoption is measured, the per-category cross-layer crosswalk, and the Pet "loyalty vs. niche" caveat are in [METHODOLOGY.md](METHODOLOGY.md).
 
 ---
 
