@@ -28,7 +28,6 @@ Picture the Amazon Retail Finance team planning next quarter's budget. They'd wa
 Each question gets its own layer. My job is just to build the numbers they'd decide from. I'm not the one making the forecast or calling the budget.
 
 ## The Answer
-
 **Layer 1: concentration sits at the top.** In this 5,026-household panel, the top 10% of households drive **35.9% of GMV** (gross merchandise value, i.e. total household spend; top 20%: 55%; Gini 0.528, a standard 0–1 concentration score). That is real concentration, but it's short of a classic 80/20 split, so the long tail still matters. If you only chased the VIPs, you'd miss almost two-thirds of GMV. The gap is almost all *how often people buy*, not how much per order: top-decile households buy ~11× more often but spend only ~1.1× more per purchase. And the clearest marker of a top-decile household is how often they shop, not how much they earn. Frequent shoppers (>10×/month) stand out far more than high earners ($150K+) do. Concentration actually *fell* slightly during COVID while panel GMV nearly doubled (2018 $5.5M → 2022 $10.7M), the surge was mass-market, not VIP-only.
 
 **Layer 2: but the risk sits in the middle.** Households that buy steadily are also the least likely to go quiet, so next-quarter risk should show up where buying is *least* stable, and it does. The top decile drives 35.9% of GMV but only **0.7% of next-quarter revenue-at-risk**; the bottom decile is the mirror image (0.6% of GMV, 9.5% of the risk). The mid-deciles (6–9) carry **64% of revenue-at-risk on just 14% of GMV.** So the households that matter for *growth* and the households that matter for *retention* are not the same.
@@ -154,7 +153,7 @@ git clone <repo>
 cd amazon-revenue-analytics
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-# Place amazon-purchases.csv, survey.csv, fields.csv in data/raw/
+ # Place amazon-purchases.csv, survey.csv, fields.csv in data/raw/
 # (download from Harvard Dataverse doi:10.7910/DVN/YGLYDY; do NOT open the CSVs
 #  in Excel/Sheets/Numbers, which silently truncate at 2^20 rows)
 python src/validate_data.py    # provenance preflight, confirms the raw data is complete
