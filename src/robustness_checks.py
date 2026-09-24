@@ -3,9 +3,10 @@
 Notebook 02 reports the drop-off model's AUC in-sample (fit and scored on the
 same Q3 2022 labels). This script adds the held-out views:
 
-  [1] 5-fold stratified cross-validation on the Q3 2022 panel. Winsorize caps
-      and z-scores are fit inside each training fold, so no test-fold
-      information reaches preprocessing.
+  [1] Held-out households on the Q3 2022 panel: 5-fold stratified
+      cross-validation (also repeated 10x) and one 80/20 stratified holdout.
+      Winsorize caps and z-scores are fit on the training part only, so no
+      held-out information reaches preprocessing.
   [2] A true walk-forward backtest: fit on Q2 2022 (features as of 2022-03-31,
       outcome = no purchase in Apr-Jun), then score Q3 2022 (features as of
       2022-06-30, outcome = no purchase in Jul-Sep).
@@ -34,7 +35,8 @@ import polars as pl
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score
-from sklearn.model_selection import RepeatedStratifiedKFold, StratifiedKFold, cross_val_score
+from sklearn.model_selection import (RepeatedStratifiedKFold, StratifiedKFold, cross_val_score,
+                                     train_test_split)
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
@@ -170,6 +172,9 @@ def main() -> None:
     rep = cross_val_score(model(), X, y, scoring="roc_auc",
                           cv=RepeatedStratifiedKFold(n_splits=5, n_repeats=10, random_state=SEED))
 
+    X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.2, stratify=y, random_state=SEED)
+    holdout = roc_auc_score(y_te, model().fit(X_tr, y_tr).predict_proba(X_te)[:, 1])
+
     X2, y2 = _xy(q2)
     backtest = roc_auc_score(y, model().fit(X2, y2).predict_proba(X)[:, 1])
 
@@ -187,9 +192,12 @@ def main() -> None:
     res = {
         "q3_dropoff_rate": float(y.mean()), "q2_dropoff_rate": float(y2.mean()),
         "auc_in_sample": float(in_sample),
-        "auc_cv5_mean": float(cv.mean()), "auc_cv5_std": float(cv.std(ddof=1)),
+        # "±" is the SD across folds (numpy default, ddof=0)
+        "auc_cv5_mean": float(cv.mean()), "auc_cv5_std": float(cv.std()),
         "auc_cv5_folds": [float(a) for a in cv],
-        "auc_cv5x10_mean": float(rep.mean()), "auc_cv5x10_std": float(rep.std(ddof=1)),
+        "auc_cv5x10_mean": float(rep.mean()), "auc_cv5x10_std": float(rep.std()),
+        "auc_cv5x10_min": float(rep.min()), "auc_cv5x10_max": float(rep.max()),
+        "auc_holdout_80_20": float(holdout), "holdout_n": int(len(y_te)),
         "auc_walk_forward_q2_to_q3": float(backtest),
         "gini": float(compute_gini(gmv)), "gini_ci95": ci(gini_b),
         "top_decile_gmv_share": float(top_share(gmv, pre)), "top_decile_gmv_share_ci95": ci(share_b),
@@ -202,7 +210,9 @@ def main() -> None:
     print(f"  in-sample, full Q3 panel (notebook 02):    {in_sample:.4f}")
     print(f"  5-fold stratified CV, held-out folds:      {res['auc_cv5_mean']:.4f} ± {res['auc_cv5_std']:.4f}"
           f"   (folds: {', '.join(f'{a:.3f}' for a in cv)})")
-    print(f"  5-fold CV repeated 10x:                    {res['auc_cv5x10_mean']:.4f} ± {res['auc_cv5x10_std']:.4f}")
+    print(f"  5-fold CV repeated 10x:                    {res['auc_cv5x10_mean']:.4f} ± {res['auc_cv5x10_std']:.4f}"
+          f"   (min {rep.min():.3f}, max {rep.max():.3f})")
+    print(f"  {f'80/20 held-out households (n={len(y_te):,}):':<43}{holdout:.4f}")
     print(f"  walk-forward: fit Q2 2022 -> score Q3 2022: {backtest:.4f}"
           f"   (drop-off rate Q2 {y2.mean():.1%}, Q3 {y.mean():.1%})")
     print()
