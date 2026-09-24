@@ -13,7 +13,7 @@ Three finance questions on a 5,026-household U.S. Amazon panel (2018–2022, ~1.
 
 The short answers: concentration sits at the top (the top 10% of households drive ~36% of GMV), but next-quarter risk sits in the *middle* (mid-tier deciles carry 64% of revenue-at-risk while the top decile carries under 1%). And category growth comes in two kinds. Some grow by pulling in new households, others by getting existing ones to spend more.
 
-**Data:** the public [Open e-commerce 1.0](https://doi.org/10.7910/DVN/YGLYDY) dataset (Berke et al., *Scientific Data* 2024), 5,027 U.S. households who consented to share their Amazon purchase history, hosted on Harvard Dataverse. Method is SQL-first (DuckDB), with a Polars cross-check on the totals and bootstrap 95% confidence intervals on the headline numbers. The full method and caveats live in **[METHODOLOGY.md](METHODOLOGY.md)**.
+**Data:** the public [Open e-commerce 1.0](https://doi.org/10.7910/DVN/YGLYDY) dataset (Berke et al., *Scientific Data* 2024), 5,027 U.S. households who consented to share their Amazon purchase history, hosted on Harvard Dataverse. Method is SQL-first (DuckDB), with a Polars cross-check on the totals and bootstrap 95% confidence intervals wherever sampling noise matters (who the top decile is, the risk model, every category metric). The full method and caveats live in **[METHODOLOGY.md](METHODOLOGY.md)**.
 
 ---
 
@@ -45,7 +45,7 @@ Each question gets its own layer. My job is just to build the numbers they'd dec
 One sentence per layer. The full how-and-why (data checks, the risk model, the category grouping) is in **[METHODOLOGY.md](METHODOLOGY.md)**:
 
 - **Foundation.** SQL-first on ~1.85M transactions via DuckDB; every total is double-checked against an equivalent Polars version, and the raw file is validated against the published source before anything runs.
-- **Layer 1.** Rank households into 10 equal groups (`NTILE(10)`), measure concentration with a Lorenz curve + Gini, and split the gap into "buys more often" vs. "bigger baskets." Every headline number carries a bootstrap 95% confidence interval (1,000 resamples), so it comes with a margin of error rather than a bare point estimate.
+- **Layer 1.** Rank households into 10 equal groups (`NTILE(10)`), measure concentration with a Lorenz curve + Gini, and split the gap into "buys more often" vs. "bigger baskets." The demographic comparisons carry bootstrap 95% confidence intervals (1,000 resamples), so each comes with a margin of error rather than a bare point estimate.
 - **Layer 2.** A simple model (logistic regression) scores each household's chance of going inactive in Q3 2022 from its behavior through mid-2022, checked against what actually happened (walk-forward inputs, in-sample AUC 0.90). Revenue-at-risk = that chance × the household's expected Q3 spend.
 - **Layer 3.** A Claude-built grouping of 1,816 raw labels into 11 categories (committed + spot-checked), 4-year CAGR for growth, and a join that folds the Layer 1 groups and Layer 2 risk back into the category view.
 
