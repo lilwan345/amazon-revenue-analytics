@@ -55,8 +55,8 @@ def _preflight() -> None:
     if missing:
         sys.exit(
             f"ERROR: missing raw input(s) under data/raw/: {', '.join(missing)}.\n"
-            f"Place the MIT Media Lab Amazon dataset CSVs there (paths + SHA-256\n"
-            f"hashes are listed in MANIFEST.md) and re-run."
+            f"Download them from Harvard Dataverse (doi:10.7910/DVN/YGLYDY; see the\n"
+            f"README 'How to Run'), check them with `python src/validate_data.py`, and re-run."
         )
 
 

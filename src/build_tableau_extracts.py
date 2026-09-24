@@ -100,9 +100,10 @@ def panel_scale_growth():
     med_cagr = float(c["cagr_4y"].median())
 
     def quad(s, g):
-        # Categories sitting exactly on a median split line (Toys = median scale,
-        # Apparel = median CAGR) are reported as boundary cases, matching the README
-        # BCG table. Compare UNROUNDED values; strict >/< otherwise.
+        # With n=11 (odd) each median IS one category's value (Toys = median scale,
+        # Health, Beauty & Personal Care = median CAGR); those sit on a split line and
+        # are reported as boundary cases, matching the README quadrant table.
+        # Compare UNROUNDED values; strict >/< otherwise.
         if abs(s - med_scale) < 1.0 or abs(g - med_cagr) < 1e-9:
             return "Boundary"
         hi_s, hi_g = s > med_scale, g > med_cagr

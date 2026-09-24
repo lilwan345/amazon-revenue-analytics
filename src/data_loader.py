@@ -1,4 +1,4 @@
-"""Layer 1 data loader for Amazon Revenue Analytics.
+"""Data loaders for Amazon Revenue Analytics.
 
 Three entry points used everywhere downstream:
 
@@ -6,12 +6,6 @@ Three entry points used everywhere downstream:
   * load_purchases()    -> Polars DataFrame of amazon-purchases.csv (~1.85M rows)
   * get_duckdb_conn()   -> DuckDB connection with both CSVs registered as views
                           (so sql/*.sql can `SELECT ... FROM purchases / survey` directly)
-
-Plus a diagnostic:
-
-  * probe_date_format() -> prints raw Order Date format and parse-rate tests
-                          for three candidate formats. Used once during setup to
-                          decide whether sql/*.sql needs STRPTIME or plain CAST.
 
 Paths are anchored to the project root via Path(__file__).resolve().parent.parent
 so the loader keeps working if the project is moved.
@@ -32,15 +26,6 @@ PURCHASES_PATH: Final[Path] = _DATA_DIR / "amazon-purchases.csv"
 
 SEED: Final[int] = 42
 
-# Candidate Order Date formats (Polars chrono / DuckDB STRPTIME both accept these).
-# Probed in this order; first format with >=95% parse rate wins for the loader's
-# print message. The source file is ISO 8601 (YYYY-MM-DD), so ISO is tried first;
-# the M/D/YY fallback only exists to recognize a spreadsheet-reformatted copy.
-_DATE_FORMAT_CANDIDATES: Final[list[tuple[str, str]]] = [
-    ("%Y-%m-%d", "YYYY-MM-DD (ISO)"),
-    ("%-m/%-d/%y", "M/D/YY"),
-]
-
 
 def load_survey() -> pl.DataFrame:
     """Read survey.csv. All columns are categorical strings."""
@@ -52,10 +37,9 @@ def load_survey() -> pl.DataFrame:
 def load_purchases(sample: bool = False, n: int = 10_000) -> pl.DataFrame:
     """Read amazon-purchases.csv as Polars.
 
-    Order Date is kept as Utf8 string -- downstream code parses with the format
-    locked in by the date-format review (either inside SQL via STRPTIME, or via an explicit
-    Polars cast after this loader). Keeping it raw here avoids committing to a
-    format before the probe confirms one.
+    Order Date is kept as a Utf8 string; downstream code parses it explicitly as
+    ISO 8601 (STRPTIME in SQL, or str.strptime in Polars), so the format is
+    visible at every use site.
 
     Args:
         sample: If True, return a deterministic random sample of n rows (seed=42).
@@ -75,16 +59,15 @@ def load_purchases(sample: bool = False, n: int = 10_000) -> pl.DataFrame:
         df = df.sample(n=n, seed=SEED)
 
     n_households = df["Survey ResponseID"].n_unique()
-    date_min, date_max, fmt_label = _best_effort_date_range(df["Order Date"])
-
     msg = (
         f"amazon-purchases.csv loaded: {df.height:,} rows, "
         f"{n_households:,} unique households"
     )
-    if fmt_label is not None:
-        msg += f", date range {date_min} -> {date_max} (parsed via {fmt_label})"
+    date_range = _iso_date_range(df["Order Date"])
+    if date_range is not None:
+        msg += f", date range {date_range[0]} -> {date_range[1]} (parsed via YYYY-MM-DD (ISO))"
     else:
-        msg += ", date range PENDING (no candidate format parsed >=95% — run probe_date_format())"
+        msg += ", date range UNKNOWN (Order Date is not ISO YYYY-MM-DD -- run src/validate_data.py)"
     print(msg)
     return df
 
@@ -112,104 +95,11 @@ def get_duckdb_conn() -> duckdb.DuckDBPyConnection:
     return con
 
 
-def probe_date_format() -> None:
-    """Diagnostic: print Order Date raw samples + parse rates for 3 candidate formats.
-
-    Used once during setup. After Leo confirms which format is correct, the
-    chosen STRPTIME format string is wired into sql/01_user_gmv_cohort_dated.sql (and
-    any future SQL that filters or aggregates on Order Date).
-    """
-    bar = "=" * 72
-    print(bar)
-    print("Order Date format probe -- amazon-purchases.csv")
-    print(bar)
-
-    # [1] Raw first-10 strings (read as Utf8, no parsing).
-    raw = pl.read_csv(PURCHASES_PATH, schema_overrides={"Order Date": pl.Utf8}, n_rows=10)
-    print("\n[1] First 10 raw 'Order Date' values (Utf8, no parsing):")
-    for v in raw["Order Date"].to_list():
-        print(f"      {v!r}")
-
-    # [2] DuckDB native CAST AS DATE + [3] STRPTIME parse-rates on first 1000 rows.
-    # Force Order Date to VARCHAR so strptime sees the raw string; otherwise
-    # read_csv_auto's date sniffer pre-types the column as DATE and strptime errors.
-    con = duckdb.connect()
-    sample_size = 1000
-    probe_sql = f"""
-        WITH s AS (
-            SELECT "Order Date" AS od
-            FROM read_csv_auto('{PURCHASES_PATH}', types={{'Order Date': 'VARCHAR'}})
-            LIMIT {sample_size}
-        )
-        SELECT
-            COUNT(*)                                            AS total,
-            COUNT(TRY_CAST(od AS DATE))                         AS cast_ok,
-            COUNT(TRY_STRPTIME(od, '%-m/%-d/%y'))               AS fmt_m_d_yy,
-            COUNT(TRY_STRPTIME(od, '%-m/%-d/%Y'))               AS fmt_m_d_yyyy,
-            COUNT(TRY_STRPTIME(od, '%Y-%m-%d'))                 AS fmt_iso,
-            MIN(od)                                             AS lex_min,
-            MAX(od)                                             AS lex_max
-        FROM s
-    """
-    row = con.sql(probe_sql).fetchone()
-    total, cast_ok, fmt_2y, fmt_4y, fmt_iso, lex_min, lex_max = row
-
-    def pct(x: int) -> str:
-        return f"{x:>4}/{total} ({100 * x / total:5.1f}%)"
-
-    print(f"\n[2] DuckDB CAST AS DATE (no format hint) on first {total} rows:")
-    print(f"      parsed OK:                              {pct(cast_ok)}")
-    print(f"\n[3] DuckDB TRY_STRPTIME parse rates on first {total} rows:")
-    print(f"      '%-m/%-d/%y'  (M/D/YY,   2-digit year): {pct(fmt_2y)}")
-    print(f"      '%-m/%-d/%Y'  (M/D/YYYY, 4-digit year): {pct(fmt_4y)}")
-    print(f"      '%Y-%m-%d'    (ISO):                    {pct(fmt_iso)}")
-    print(f"\n      Lexicographic min/max of raw strings (sanity check):")
-    print(f"        min: {lex_min!r}")
-    print(f"        max: {lex_max!r}")
-
-    # Full-file parse-rate for the winning format, to surface any tail-row format drift.
-    winners = [
-        ("%-m/%-d/%y", fmt_2y),
-        ("%-m/%-d/%Y", fmt_4y),
-        ("%Y-%m-%d", fmt_iso),
-    ]
-    best_fmt, best_count = max(winners, key=lambda t: t[1])
-    if best_count == total:
-        full_sql = f"""
-            SELECT
-                COUNT(*)                                  AS total,
-                COUNT(TRY_STRPTIME("Order Date", '{best_fmt}')) AS parsed,
-                MIN(TRY_STRPTIME("Order Date", '{best_fmt}'))   AS dt_min,
-                MAX(TRY_STRPTIME("Order Date", '{best_fmt}'))   AS dt_max
-            FROM read_csv_auto('{PURCHASES_PATH}', types={{'Order Date': 'VARCHAR'}})
-        """
-        total_full, parsed_full, dt_min, dt_max = con.sql(full_sql).fetchone()
-        print(f"\n[4] Full-file parse with leading candidate {best_fmt!r}:")
-        print(
-            f"      parsed: {parsed_full:,}/{total_full:,} "
-            f"({100 * parsed_full / total_full:.2f}%); "
-            f"date range: {dt_min} -> {dt_max}"
-        )
-
-    con.close()
-    print("\n" + bar)
-    print("Decision needed: pick the STRPTIME format for sql/01_user_gmv_cohort_dated.sql.")
-    print("Do NOT edit sql/ files or load_purchases() parsing until Leo confirms.")
-    print(bar)
-
-
-def _best_effort_date_range(
-    col: pl.Series,
-) -> tuple[str | None, str | None, str | None]:
-    """Try candidate formats on a Utf8 date column. Return (min, max, label) or (None, None, None)."""
+def _iso_date_range(col: pl.Series) -> tuple[str, str] | None:
+    """(min, max) of an ISO-date Utf8 column, or None if <95% of values parse."""
     if col.dtype != pl.Utf8 or col.len() == 0:
-        return None, None, None
-    for fmt, label in _DATE_FORMAT_CANDIDATES:
-        try:
-            parsed = col.str.strptime(pl.Date, format=fmt, strict=False)
-            non_null = parsed.drop_nulls()
-            if non_null.len() / col.len() >= 0.95:
-                return str(non_null.min()), str(non_null.max()), label
-        except Exception:
-            continue
-    return None, None, None
+        return None
+    parsed = col.str.strptime(pl.Date, format="%Y-%m-%d", strict=False).drop_nulls()
+    if parsed.len() / col.len() < 0.95:
+        return None
+    return str(parsed.min()), str(parsed.max())

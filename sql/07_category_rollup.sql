@@ -1,36 +1,36 @@
 -- sql/07_category_rollup.sql
 --
--- Layer 3 — roll up 1,871 raw Amazon browse-node leaf categories into 11 (+ Other/Unknown)
+-- Layer 3 — roll up 1,816 raw Amazon category labels into 11 (+ Other/Unknown)
 -- super-categories via the deterministic taxonomy JSON committed to
 -- outputs/tables/category_taxonomy.json (flattened to CSV at
 -- outputs/tables/category_taxonomy_mapping.csv for SQL JOIN-friendliness).
 --
+-- Expects the `purchases` view registered by src.data_loader.get_duckdb_conn()
+-- (same as sql/01 and sql/05). Run from the project root so the taxonomy CSV
+-- path resolves.
+--
 -- Output: super-category × year aggregates over the cohort-capped panel
 -- (2018-2022, project rule "cohort cap at 2023-01-01"). Layer 3 metrics
 -- (scale, growth, volatility, per-household scale) are all derived from
--- this rollup parquet — see notebooks/03_layer3_allocation.ipynb.
+-- this rollup; src/build_layer3.py computes the same rollup (category_yearly)
+-- and notebook 03 asserts the total reconciles to Layer 1's panel GMV.
 --
--- NULL raw category (4.8% of cohort-capped rows, 5.4% of GMV) is mapped
--- to "Other / Unknown" via the LEFT JOIN + COALESCE on super_category.
--- This is intentional: NULL is treated as its own observable "missing-data"
--- super-category so Layer 3 GMV totals reconcile against Layer 1 panel-GMV.
+-- A NULL raw category (~5% of GMV), or a raw label the taxonomy does not list,
+-- is mapped to "Other / Unknown" via the LEFT JOIN + COALESCE on super_category.
+-- This is intentional: missing data stays visible as its own bucket instead of
+-- being dropped, so Layer 3 GMV totals reconcile against Layer 1 panel GMV.
 
 WITH purchases_capped AS (
-    -- Date handling note: this file reads the raw CSV directly via read_csv_auto.
-    -- "Order Date" is ISO 8601 (YYYY-MM-DD), which DuckDB's sniffer types as DATE
-    -- unambiguously, so a DATE comparison + EXTRACT(YEAR FROM ...) here is safe
-    -- without an explicit STRPTIME. (sql/01 and sql/05 read the `purchases` VIEW,
-    -- which keeps "Order Date" as VARCHAR, so they parse explicitly.) The rollup
-    -- total reconciles exactly to Layer 1's cohort-capped panel GMV (asserted in
-    -- notebook 03).
+    -- Same cohort cap and defensive filters as sql/01.
     SELECT
-        "Survey ResponseID"                    AS household_id,
-        "Order Date"                           AS order_date,
-        EXTRACT(YEAR FROM "Order Date")        AS yr,
-        "Category"                             AS raw_category,
-        "Purchase Price Per Unit" * "Quantity" AS line_gmv
-    FROM read_csv_auto('data/raw/amazon-purchases.csv')
-    WHERE "Order Date" < DATE '2023-01-01'
+        "Survey ResponseID"                                       AS household_id,
+        EXTRACT(YEAR FROM STRPTIME("Order Date", '%Y-%m-%d'))     AS yr,
+        "Category"                                                AS raw_category,
+        "Purchase Price Per Unit" * "Quantity"                    AS line_gmv
+    FROM purchases
+    WHERE STRPTIME("Order Date", '%Y-%m-%d') < TIMESTAMP '2023-01-01'
+      AND "Purchase Price Per Unit" IS NOT NULL AND "Purchase Price Per Unit" > 0
+      AND "Quantity" IS NOT NULL AND "Quantity" > 0
 ),
 taxonomy AS (
     SELECT raw_category, super_category
@@ -40,7 +40,6 @@ joined AS (
     SELECT
         p.household_id,
         p.yr,
-        p.raw_category,
         p.line_gmv,
         COALESCE(t.super_category, 'Other / Unknown') AS super_category
     FROM purchases_capped p

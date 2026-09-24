@@ -1,8 +1,8 @@
-"""MANIFEST helpers — input hashing, row counts, manifest writer.
+"""MANIFEST helpers: input hashing and a read-only check against MANIFEST.md.
 
-Used at init and to append Layer 1 outputs. The manifest
-lives at the project root as MANIFEST.md; this module never writes anything
-inside outputs/ -- only the top-level audit doc.
+MANIFEST.md is a committed document (inputs, output schemas, runtime, changelog).
+Notebooks never rewrite it; they call `verify_inputs()` to confirm the raw CSVs
+are byte-identical to the ones the documented results came from.
 
 Per standard audit-trail practice: only hash INPUTS, never outputs. Parquet is
 binary non-deterministic; hashing outputs would be wrong and would break reruns.
@@ -10,92 +10,54 @@ binary non-deterministic; hashing outputs would be wrong and would break reruns.
 from __future__ import annotations
 
 import hashlib
-from dataclasses import dataclass
-from datetime import datetime, timezone
+import re
 from pathlib import Path
 from typing import Final
 
 _PROJECT_ROOT: Final[Path] = Path(__file__).resolve().parent.parent
 MANIFEST_PATH: Final[Path] = _PROJECT_ROOT / "MANIFEST.md"
 
+# One row of the MANIFEST "Inputs" table:
+# | label | `data/raw/x.csv` | rows | size | `<64-hex sha256>` |
+_INPUT_ROW: Final[re.Pattern[str]] = re.compile(
+    r"^\|[^|]*\| `([^`]+)` \|[^|]*\|[^|]*\| `([0-9a-f]{64})` \|$", flags=re.M
+)
+
 
 def file_sha256(path: Path) -> str:
-    """Return the SHA256 hex digest of a file (read whole file -- fine up to ~1 GB)."""
-    return hashlib.sha256(path.read_bytes()).hexdigest()
-
-
-def file_size_mb(path: Path) -> float:
-    return path.stat().st_size / 1024 / 1024
-
-
-def count_lines(path: Path) -> int:
-    """Count physical lines including the header line."""
+    """SHA256 hex digest of a file, streamed (same digest as `shasum -a 256`)."""
+    h = hashlib.sha256()
     with path.open("rb") as f:
-        return sum(1 for _ in f)
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
 
 
-@dataclass(frozen=True)
-class InputFile:
-    label: str
-    path: Path
-    rows: int  # caller decides whether this is rows-incl-header or data-rows
-
-    @property
-    def rel_path(self) -> str:
-        return self.path.relative_to(_PROJECT_ROOT).as_posix()
+def recorded_hashes() -> dict[str, str]:
+    """Map each input path in MANIFEST.md's Inputs table to its recorded SHA256."""
+    return dict(_INPUT_ROW.findall(MANIFEST_PATH.read_text()))
 
 
-def init_manifest(inputs: list[InputFile]) -> Path:
-    """Write the initial MANIFEST.md at project root. Returns the path written.
+def verify_inputs(strict: bool = True) -> bool:
+    """Recompute each raw input's SHA256 and compare it with MANIFEST.md.
 
-    Idempotent: overwrites any existing MANIFEST.md. Outputs section is left as
-    a placeholder for Layer 1 and subsequent layers.
+    Prints one line per input. With strict=True (the notebook default) a missing
+    or changed file raises, so a run on different bytes cannot silently proceed.
     """
-    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-
-    input_rows = "\n".join(
-        f"| {f.label} | `{f.rel_path}` | {f.rows:,} | {file_size_mb(f.path):.2f} MB "
-        f"| `{file_sha256(f.path)}` |"
-        for f in inputs
-    )
-
-    body = f"""# MANIFEST — Amazon Revenue Analytics
-
-> Generated and updated incrementally by each layer's notebook.
-> Last updated: {timestamp}
-> Project commit: (uncommitted)
-
-## Inputs
-
-| File | Path | Rows | Size | SHA256 |
-|---|---|---|---|---|
-{input_rows}
-
-Hashes computed via `hashlib.sha256(path.read_bytes()).hexdigest()` — see
-`src/manifest_utils.py::file_sha256`.
-
-## Outputs — Layer 1
-
-*(Populated after Layer 1 outputs land in `outputs/tables/` and `outputs/figures/`.)*
-
-## Expected Runtime (clean kernel, M-series Mac)
-
-*(Populated after the full notebook runs once from a clean kernel.)*
-
-## Reproducibility Notes
-
-- **Random seeds:** All stochastic operations seed=42 (bootstrap, samplings, model training).
-- **Dependency pinning:** See `requirements.txt`. Critical versions: DuckDB ≥ 1.0, Polars ≥ 1.0.
-- **Python version:** 3.11+ (developed on 3.13.9).
-- **Data versioning:** Source CSVs are not committed (gitignored). Hashes above let consumers verify they have the right file.
-- **Determinism check:** Re-running the full notebook should produce byte-identical `user_gmv.parquet` columns; if not, investigate before proceeding.
-
-## Changelog
-
-| Date | Layer | Change |
-|---|---|---|
-| {timestamp[:10]} | 1 | Initial MANIFEST: input CSVs hashed during the setup sanity check |
-"""
-
-    MANIFEST_PATH.write_text(body)
-    return MANIFEST_PATH
+    recorded = recorded_hashes()
+    if not recorded:
+        raise RuntimeError(f"no input hashes found in {MANIFEST_PATH.name}")
+    ok = True
+    for rel, expected in recorded.items():
+        path = _PROJECT_ROOT / rel
+        if not path.exists():
+            status = "MISSING"
+        else:
+            status = "ok" if file_sha256(path) == expected else "MISMATCH"
+        ok &= status == "ok"
+        print(f"  [{status:>8}] {rel}  sha256={expected[:16]}...")
+    if strict and not ok:
+        raise RuntimeError(
+            "raw inputs differ from MANIFEST.md -- results would not match the documented run"
+        )
+    return ok

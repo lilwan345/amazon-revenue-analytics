@@ -6,8 +6,8 @@
 -- pipeline; headline concentration metrics measure the actual tail.)
 --
 -- Expects a `purchases` view (registered by src.data_loader.get_duckdb_conn():
--- CREATE VIEW purchases AS SELECT * FROM
--- read_csv_auto('data/raw/amazon-purchases.csv')
+--   CREATE VIEW purchases AS SELECT * FROM
+--   read_csv_auto('data/raw/amazon-purchases.csv', types={'Order Date': 'VARCHAR'})
 -- ). When inspecting this file outside the notebook, run the CREATE VIEW above
 -- in any DuckDB session and this query becomes self-contained.
 --

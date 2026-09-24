@@ -16,8 +16,10 @@
 --
 -- Output columns (5 SQL-side features + last_order_date for downstream recency):
 --   household_id
---   gmv_trailing_12m                     -- recent  (2021-07-01, 2022-06-30]
---   gmv_trailing_24m_lag12m              -- historical (2020-07-01, 2021-06-30]
+--   gmv_trailing_12m                     -- recent:     2021-07-01 .. 2022-06-30
+--   gmv_trailing_24m_lag12m              -- historical: 2020-07-01 .. 2021-06-30
+--                                           (a 12-month window: months 13-24 before
+--                                           the cutoff, hence "24m, lagged 12m")
 --   line_items_trailing_12m
 --   aov_trailing_12m
 --   n_distinct_categories_trailing_12m
@@ -61,7 +63,7 @@ trailing_12m AS (
     GROUP BY household_id
 ),
 trailing_24m_lag12m AS (
-    -- Historical window: (2020-07-01, 2021-06-30]
+    -- Historical window: [2020-07-01, 2021-07-01), i.e. months 13-24 before the cutoff
     SELECT
         household_id,
         SUM(line_gmv) AS gmv_trailing_24m_lag12m
