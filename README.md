@@ -161,6 +161,9 @@ jupyter notebook notebooks/01_layer1_concentration.ipynb   # then 02, then 03
 # (or rebuild just the SQL intermediates so sql/*.sql run standalone:
 #  python -m src.build_sql_inputs)
 
+# Held-out checks: 5-fold CV + Q2->Q3 walk-forward AUC, bootstrap CIs on Gini / top-decile share
+python -m src.robustness_checks
+
 # Layer 4: refresh the Tableau CSVs and the static dashboard preview
 python src/build_tableau_extracts.py
 python src/build_layer4_mockup.py
