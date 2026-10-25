@@ -1,6 +1,12 @@
 # Amazon Revenue Analytics
 *Concentration, Revenue-at-Risk, and Growth Allocation*
 
+[![tests](https://github.com/lilwan345/amazon-revenue-analytics/actions/workflows/tests.yml/badge.svg)](https://github.com/lilwan345/amazon-revenue-analytics/actions/workflows/tests.yml)
+![SQL](https://img.shields.io/badge/SQL-DuckDB-fff000)
+![Python](https://img.shields.io/badge/Python-Polars%20%C2%B7%20scikit--learn-3776ab)
+[![Tableau](https://img.shields.io/badge/Tableau%20Public-live%20dashboard-e97627)](https://public.tableau.com/app/profile/leo.wan3084/viz/AmazonFinanceReviewDashboardQ32022/Dashboard1)
+[![MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
 **Built on 5,026 U.S. Amazon households and ~1.85M purchases (2018–2022).**
 
 [![Lorenz curve preview](outputs/figures/layer1/lorenz_curve.png)](outputs/figures/layer1/lorenz_curve.png)
@@ -15,6 +21,16 @@ The short answers: concentration sits at the top (the top 10% of households driv
 
 **Data:** the public [Open e-commerce 1.0](https://doi.org/10.7910/DVN/YGLYDY) dataset (Berke et al., *Scientific Data* 2024), 5,027 U.S. households who consented to share their Amazon purchase history, hosted on Harvard Dataverse. Method is SQL-first (DuckDB), with a Polars cross-check on the totals and bootstrap 95% confidence intervals wherever sampling noise matters (who the top decile is, the risk model, every category metric). The full method and caveats live in **[METHODOLOGY.md](METHODOLOGY.md)**.
 
+### Key results
+
+| Question | Finding | How it's measured |
+|---|---|---|
+| Where is revenue concentrated? | Top 10% of households drive **35.9% of GMV** (Gini 0.528) | `NTILE(10)` deciles, Lorenz curve + Gini, bootstrap CIs |
+| What makes the top decile different? | **~95% how often they buy**, ~5% basket size | top decile vs. bottom 50%, log decomposition |
+| Where is next quarter's risk? | Deciles 6–9 hold **64% of revenue-at-risk on 14% of GMV**; the top decile holds 0.7% | drop-off model × expected Q3 spend |
+| Is the risk model real signal? | **AUC 0.902 ± 0.011** on held-out households (5-fold CV); 0.53 with shuffled labels | walk-forward features, cross-validation, shuffle-label test |
+| Where should new budget go? | Home and Apparel grow *and* bring in new customers; Pet grows through existing heavy buyers | 4-year CAGR × scale, new-customer adoption, cross-layer join |
+
 ---
 
 ## The Question
@@ -28,7 +44,7 @@ Picture the Amazon Retail Finance team planning next quarter's budget. They'd wa
 Each question gets its own layer. My job is just to build the numbers they'd decide from. I'm not the one making the forecast or calling the budget.
 
 ## The Answer
-**Layer 1: concentration sits at the top.** In this 5,026-household panel, the top 10% of households drive **35.9% of GMV** (gross merchandise value, i.e. total household spend; top 20%: 55%; Gini 0.528, a standard 0–1 concentration score). That is real concentration, but it's short of a classic 80/20 split, so the long tail still matters. If you only chased the VIPs, you'd miss almost two-thirds of GMV. The gap is almost all *how often people buy*, not how much per order: top-decile households buy ~11× more often but spend only ~1.1× more per purchase. And the clearest marker of a top-decile household is how often they shop, not how much they earn. Frequent shoppers (>10×/month) stand out far more than high earners ($150K+) do. Concentration actually *fell* slightly during COVID while panel GMV nearly doubled (2018 $5.5M → 2022 $10.7M), the surge was mass-market, not VIP-only.
+**Layer 1: concentration sits at the top.** In this 5,026-household panel, the top 10% of households drive **35.9% of GMV** (gross merchandise value, i.e. total household spend; top 20%: 55%; Gini 0.528, a standard 0–1 concentration score). That is real concentration, but it's short of a classic 80/20 split, so the long tail still matters. If you only chased the VIPs, you'd miss almost two-thirds of GMV. The gap is almost all *how often people buy*, not how much per order: top-decile households buy ~11× more often but spend only ~1.1× more per purchase. And the clearest marker of a top-decile household is how often they shop, not how much they earn. Frequent shoppers (>10×/month) stand out far more than high earners ($150K+) do. Concentration actually *fell* slightly during COVID while panel GMV nearly doubled (2018 $5.5M → 2022 $10.7M): the surge was mass-market, not VIP-only.
 
 **Layer 2: but the risk sits in the middle.** Households that buy steadily are also the least likely to go quiet, so next-quarter risk should show up where buying is *least* stable, and it does. The top decile drives 35.9% of GMV but only **0.7% of next-quarter revenue-at-risk**; the bottom decile is the mirror image (0.6% of GMV, 9.5% of the risk). The mid-deciles (6–9) carry **64% of revenue-at-risk on just 14% of GMV.** So the households that matter for *growth* and the households that matter for *retention* are not the same.
 
@@ -49,9 +65,14 @@ One sentence per layer. The full how-and-why (data checks, the risk model, the c
 - **Layer 2.** A simple model (logistic regression) scores each household's chance of going inactive in Q3 2022 from its behavior through mid-2022, checked against what actually happened (walk-forward inputs; AUC 0.90 in-sample, 0.902 ± 0.011 under 5-fold cross-validation). Revenue-at-risk = that chance × the household's expected Q3 spend.
 - **Layer 3.** A Claude-built grouping of 1,816 raw labels into 11 categories (committed + spot-checked), 4-year CAGR for growth, and a join that folds the Layer 1 groups and Layer 2 risk back into the category view.
 
-## The Caveat
+## How I know the numbers are right
 
-These 5,026 households are essentially the **full consenting panel**, not a random sample of Amazon's customers, so every number reads as "within this panel," never "across Amazon." The panel shops more than Amazon's average customer (87% were active in Q3), so any "how engaged are people" number here is probably on the high side. "Revenue-at-risk" is a single-quarter *expected* figure (each household's chance of going quiet × what it would have spent), not a worst-case number and not permanent lost revenue. Demographics are a one-time 2021 snapshot.
+- **The raw file gets checked first.** `src/validate_data.py` (step one of How to Run) compares it with the published source and fails loudly on the 1,048,575-row signature a spreadsheet leaves when it silently cuts a CSV. That check exists because it happened to me: my first copy had lost 43% of its rows (only 2,846 of 5,027 households). I re-downloaded the full file, re-ran everything, and [METHODOLOGY.md](METHODOLOGY.md#layer-0-data-provenance) lists which findings held and which moved.
+- **Same inputs every time.** Notebook 01 re-hashes the raw files against the SHA256s in [MANIFEST.md](MANIFEST.md) and stops if a single byte differs.
+- **Two engines.** Every core table is computed once in SQL (DuckDB) and again in Polars, and the two have to agree on all 5,026 households before anything is saved.
+- **No peeking at the answer.** Layer 2 features are cut off at 2022-06-30 inside the SQL itself. Refitting on shuffled labels 50 times gives a median AUC of 0.53 (max 0.55), so the real 0.90 isn't leakage. A one-feature baseline (days since last purchase) already reaches 0.86, which I report rather than hide.
+- **Margins of error.** Bootstrap 95% CIs (1,000 resamples, fixed seed) on the demographic, model and category results, plus the Gini and top-decile share.
+- **Automated tests.** 26 pytest tests run the real `sql/` files on a small synthetic panel with hand-checked answers (cohort cap, bad-row filters, decile order, the walk-forward cutoff, the drop-off label) and cover the stats helpers and the preflight. They run in CI on every push.
 
 ---
 
@@ -109,7 +130,8 @@ Build steps and the field spec are in [`tableau/LAYER4_BUILD_GUIDE.md`](tableau/
 
 ## Limitations
 
-- **Consenting panel, not Amazon's customer base.** Every number is "within this 5,026-household panel," never "across Amazon." People who consent to share purchase data likely differ from those who don't, and the panel's 87% Q3 activity rate is direct evidence it is more engaged than Amazon's base.
+- **Consenting panel, not Amazon's customer base.** These 5,026 households are essentially the full consenting panel, not a random sample, so every number reads as "within this panel," never "across Amazon." People who consent to share purchase data likely differ from those who don't, and the panel's 87% Q3 activity rate is direct evidence it is more engaged than Amazon's base, so any "how engaged are people" number here is probably on the high side.
+- **Revenue-at-risk is a one-quarter expected value.** It is each household's chance of going quiet × what it would have spent in Q3, not a worst case and not permanent lost revenue. "Drop-off" means no purchase that quarter; ~28% of households silent for a full year buy again within a quarter, which is why I don't call it churn.
 - **Cohort cap at 2023-01-01.** Post-2023 data is thin (~2% of rows) because people dropped out of the panel. If I kept it, someone who just stopped reporting would look like they'd stopped buying, and that's not a fair assumption.
 - **Demographics are a 2021 snapshot.** Income, state, and household size are recorded once, so a household whose income changed across 2018–2022 is misclassified on that dimension.
 
@@ -128,6 +150,7 @@ amazon-revenue-analytics/
 ├── sql/                       ← canonical SQL aggregations (7 files, Layers 1–3)
 ├── src/                       ← reusable Python helpers (loaders, stats, viz, build scripts)
 ├── notebooks/                 ← 01 concentration · 02 RaR · 03 allocation
+├── tests/                     ← pytest: real sql/ files on a synthetic panel, stats, preflight
 ├── tableau/                   ← Layer 4 dashboard data + build guide
 └── outputs/
     ├── tables/                ← parquet (gitignored) + committed taxonomy files
@@ -137,10 +160,11 @@ amazon-revenue-analytics/
 ## Tech stack
 
 - **SQL:** DuckDB (reads CSV / Parquet directly, no separate database)
-- **Python:** Polars (1M-row aggregation), Pandas (survey-side joins), NumPy (bootstrap)
+- **Python:** Polars (1.85M-row aggregation), Pandas (survey-side joins), NumPy (bootstrap)
 - **Stats:** NumPy (Lorenz, Gini, bootstrap CIs), scikit-learn (logistic regression), used to *rank* household risk, not to forecast revenue
 - **Viz:** matplotlib + seaborn (finance-clean styling)
 - **Notebooks:** Jupyter
+- **Testing:** pytest + GitHub Actions
 
 Outputs are parquet, not CSV: columnar, 5–10× smaller, and no float-precision loss. Standard in BI workflows.
 
@@ -167,6 +191,9 @@ python -m src.robustness_checks
 # Layer 4: refresh the Tableau CSVs and the static dashboard preview
 python src/build_tableau_extracts.py
 python src/build_layer4_mockup.py
+
+# Tests (no raw data needed)
+python -m pytest tests/
 ```
 
 Runtime: ~30s for Layer 1, ~45s for Layer 2 on the full ~1.85M rows (M-series Mac).
