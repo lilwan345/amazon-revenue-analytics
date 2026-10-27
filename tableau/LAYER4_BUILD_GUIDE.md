@@ -5,7 +5,7 @@ in this folder. The static target you're matching is `outputs/figures/layer4/das
 
 > ✅ **Status: published.** A v1 of this dashboard is live at
 > https://public.tableau.com/app/profile/leo.wan3084/viz/AmazonFinanceReviewDashboardQ32022/Dashboard1
-> — referenced from the README Layer 4 section. The steps below remain the reproduction
+> and linked from the top of the README. The steps below remain the reproduction
 > recipe for rebuilding it from scratch.
 >
 > **v1 → v2 polish items** (so-what captions, scatter labels, inline %-labels, hide

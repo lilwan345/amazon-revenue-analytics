@@ -23,6 +23,31 @@ QUAD_COLOR = {
 }
 
 
+# Survey labels are long and contain "$", which matplotlib would read as math.
+SHORT_LABELS = {
+    "order_freq: More than 10 times per month": "Orders >10x / month",
+    "order_freq: 5 - 10 times per month": "Orders 5-10x / month",
+    "income: $150,000 or more": r"Income \$150K+",
+    "income: $100,000 - $149,999": r"Income \$100-150K",
+    "age: 35 - 44 years": "Age 35-44",
+    "education: Graduate or professional degree (MA, MS, MBA, PhD, JD, MD, DDS, etc)":
+        "Graduate degree",
+}
+
+
+def short_label(label):
+    if label in SHORT_LABELS:
+        return SHORT_LABELS[label]
+    return label.split(": ", 1)[-1].replace("$", r"\$")
+
+
+# Where each category's name sits relative to its dot, so neighbors don't collide.
+LABEL_OFFSET = {
+    "Pet": (4, 5, "left"), "Auto": (4, -12, "left"), "Apparel": (-6, 6, "right"),
+    "Health": (6, -11, "left"), "Office": (4, -11, "left"),
+}
+
+
 def so_what(ax, text):
     ax.text(0.0, -0.16, text, transform=ax.transAxes, fontsize=9.5,
             style="italic", color=vu.COLOR_MUTED, va="top", wrap=True)
@@ -49,19 +74,17 @@ def panel_demographic(ax):
     d = (pl.read_csv(TBL / "demographic_overindex.csv")
          .filter(pl.col("significant") & pl.col("included_in_report"))
          .sort("over_index_pct", descending=True).head(6).sort("over_index_pct"))
-    labels = [l.replace("order_freq: ", "").replace("hh_income: ", "")
-              .replace("More than 10 times per month", ">10 orders/month")
-              for l in d["label"]]
+    labels = [short_label(l) for l in d["label"]]
     colors = [vu.COLOR_ACCENT if v == d["over_index_pct"].max() else vu.COLOR_PRIMARY
               for v in d["over_index_pct"]]
     ax.barh(labels, d["over_index_pct"], color=colors)
     for y, v in enumerate(d["over_index_pct"]):
         ax.text(v + 8, y, f"+{v:.0f}%", va="center", fontsize=8.5, color=vu.COLOR_TEXT)
-    ax.set_xlabel("Top-decile over-index vs panel (%)")
+    ax.set_xlabel("How much more common in the top 10% than in the whole panel (%)")
     ax.set_title("Demographic Over-Index  ·  Top 10% vs panel", loc="left", fontweight="bold")
     ax.margins(x=0.18)
-    so_what(ax, "So what: heavy cadence (>10x/mo) over-indexes +364% — engagement, "
-                "not affluence, defines the top decile.")
+    so_what(ax, "So what: ordering more than 10 times a month is by far the strongest marker "
+                "of a top-10% household; high income is a weaker one.")
 
 
 def panel_rar(ax):
@@ -71,11 +94,11 @@ def panel_rar(ax):
     ax.set_xticks(range(1, 11))
     ax.set_xlabel("GMV decile (1 = top spenders)"); ax.set_ylabel("% of panel revenue-at-risk")
     ax.set_title("Revenue-at-Risk by Decile  ·  Q3 drop-off", loc="left", fontweight="bold")
-    ax.annotate("Mid-deciles 6-9\n= 64% of RaR", xy=(7.5, r.filter(pl.col("decile") == 8)["panel_share_pct"][0]),
+    ax.annotate("Deciles 6-9\n= 64% of the risk", xy=(7.5, r.filter(pl.col("decile") == 8)["panel_share_pct"][0]),
                 xytext=(2.4, r["panel_share_pct"].max() * 0.8), fontsize=9, color=vu.COLOR_ACCENT,
                 arrowprops=dict(arrowstyle="->", color=vu.COLOR_ACCENT, lw=1))
     so_what(ax, "So what: revenue is concentrated at the top, but risk is in the middle — "
-                "64% of RaR on 14% of GMV.")
+                "64% of revenue-at-risk on 14% of GMV.")
 
 
 def panel_scale_growth(ax):
@@ -87,12 +110,16 @@ def panel_scale_growth(ax):
         x = r["scale_2022_gmv"] / 1000
         ax.scatter(x, r["cagr_pct"], s=20 + r["n_households"] / 18,
                    color=QUAD_COLOR[r["quadrant"]], alpha=0.8, edgecolor="white", lw=0.6, zorder=3)
-        ax.annotate(r["super_category"].split(",")[0].split(" & ")[0], (x, r["cagr_pct"]),
-                    fontsize=7.5, color=vu.COLOR_TEXT, xytext=(4, 3), textcoords="offset points")
-    ax.set_xlabel("2022 GMV scale ($K)"); ax.set_ylabel("4-year CAGR (%)")
-    ax.set_title("Growth Allocation  ·  Scale x Growth", loc="left", fontweight="bold")
-    ax.text(med_s + 12, ax.get_ylim()[1] * 0.97, f"median ${med_s:.0f}K", fontsize=7.5,
-            color=vu.COLOR_MUTED, va="top")
+        name = r["super_category"].split(",")[0].split(" & ")[0]
+        dx, dy, ha = LABEL_OFFSET.get(name, (6, 3, "left"))
+        ax.annotate(name, (x, r["cagr_pct"]), fontsize=7.5, color=vu.COLOR_TEXT,
+                    xytext=(dx, dy), textcoords="offset points", ha=ha)
+    ax.set_xlabel(r"2022 GMV (\$K)"); ax.set_ylabel("4-year CAGR (%)")
+    ax.set_title("Growth Allocation  ·  Size x Growth", loc="left", fontweight="bold")
+    ax.text(med_s + 12, ax.get_ylim()[0] + 0.5, rf"median size \${med_s:.0f}K", fontsize=7.5,
+            color=vu.COLOR_MUTED, va="bottom")
+    ax.text(ax.get_xlim()[1], med_g - 0.4, f"median growth {med_g:.1f}%", fontsize=7.5,
+            color=vu.COLOR_MUTED, ha="right", va="top")
     so_what(ax, "So what: Home & Apparel are the cleanest INVEST — high growth that new "
                 "customers actually enter through.")
 

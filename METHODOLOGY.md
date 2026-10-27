@@ -39,6 +39,17 @@
 
 - **The category grouping.** Claude (Opus 4.7) rolled up the 1,816 raw Amazon category labels into 11 super-categories plus an explicit `Other / Unknown` bucket, using a keyword dictionary committed at `outputs/tables/category_taxonomy.json` (so the grouping is fixed and reproducible, not re-guessed each run). Coverage: ~89% of GMV maps to a named category; the other ~11% sits in `Other / Unknown`, roughly half missing raw labels (kept visible, not dropped) and half long-tail leftovers. A 50-row spot-check caught and fixed 3 mis-labels before committing. Read the per-category numbers as ±2–3 points, not exact.
 - **4-year growth, not 2-year.** Growth is the 4-year CAGR, `(2022 / 2018)^(1/4) − 1`, rather than a 2-year rate. 2020 was already COVID-lifted in this panel, so using 2020 as the baseline would understate growth for categories that surged early in COVID. The 4-year window smooths that out. Each category's scale and growth also carries a bootstrap 95% CI (households resampled in a fixed order, so the CIs are identical run to run), wider for small-buyer-pool categories like Pet, so those are read as directional.
+- **Size × growth quadrants.** Size is 2022 GMV per category; growth is the 4-year CAGR. The lines split on the median size ($641K) and the median growth (24.2%):
+
+  | Quadrant | Categories (2022 GMV, 4-year CAGR) |
+  |---|---|
+  | **INVEST** (high growth, large) | Home, Kitchen & Bath ($1.95M, 26.2%) · Apparel ($1.31M, 24.5%) · Grocery ($877K, 32.0%) |
+  | **BET-small** (high growth, small) | Pet ($491K, 26.4%) · Auto, Tools & Outdoor ($450K, 25.8%) |
+  | **MAINTAIN** (low growth, large) | Electronics ($1.72M, 14.2%) |
+  | **HARVEST** (low growth, small) | Office ($280K, 23.8%) · Gift Cards ($499K, 11.9%) · Books & Media ($332K, −0.4%) |
+  | On a median line | Health & Personal Care ($1.36M, 24.2%) · Toys ($641K, 20.1%) |
+
+  Read alone, this chart says "fund INVEST, cut HARVEST." The next two points are why that would be wrong.
 - **The cross-layer join is the point.** Folding Layer 1 (which decile a category's GMV comes from) and Layer 2 (its households' risk) back into the category view is what turns a generic Scale × Growth chart into something useful:
   - **Pet** is concentrated in top-decile households (≈39% of Pet GMV) and new customers adopt it slowly, so it reads as loyalty among existing heavy buyers, not a place to chase new customers. *(Caveat: a heavy top-decile share could also just mean a small, niche buyer pool; telling loyalty and niche-ness apart would need repeat-purchase detail I didn't compute, so treat this as directional.)*
   - **Books** has the broadest reach (≈88% of households) and the *least* top-decile concentration, closer to broad retention than a "harvest and forget" category. Cutting it would hit the mid-tier households Layer 2 flagged as most at-risk.
