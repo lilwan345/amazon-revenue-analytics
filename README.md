@@ -4,112 +4,135 @@
 [![Tableau Public](https://img.shields.io/badge/Tableau%20Public-live%20dashboard-e97627)](https://public.tableau.com/app/profile/leo.wan3084/viz/AmazonFinanceReviewDashboardQ32022/Dashboard1)
 [![MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-Where does an online store's revenue come from, which part of it could
-disappear next quarter, and where should the next budget dollar go? I answer
-those three questions with SQL and Python on **1.85M real Amazon purchases
-from 5,026 U.S. households (2018–2022)**, then put the answers on one
-[Tableau dashboard](https://public.tableau.com/app/profile/leo.wan3084/viz/AmazonFinanceReviewDashboardQ32022/Dashboard1).
+The question I wanted to answer was pretty simple. Where does an online
+store's money actually come from, which part of it might go quiet next
+quarter, and where should the next budget dollar go? I used SQL and Python on
+**1.85M real Amazon purchases from 5,026 U.S. households (2018–2022)** and put
+everything on one [Tableau dashboard](https://public.tableau.com/app/profile/leo.wan3084/viz/AmazonFinanceReviewDashboardQ32022/Dashboard1).
 
 [![The finance review dashboard: concentration, who the top spenders are, revenue-at-risk by decile, and category size vs. growth](outputs/figures/layer4/dashboard_mockup.png)](https://public.tableau.com/app/profile/leo.wan3084/viz/AmazonFinanceReviewDashboardQ32022/Dashboard1)
 
-*Static preview of the dashboard. Click it for the live, interactive version.*
+*This is a static preview, click it to open the live one.*
 
 ## What I found
 
-1. **Revenue is concentrated, but not 80/20.** The top 10% of households
-   account for 36% of all spending (the top 20% for 55%). What sets them apart
-   is how often they order, about 11× as often as the bottom half, not how
-   much each order costs (about 1.1×). Ordering more than 10 times a month is
-   a much stronger marker of a top household than high income.
-2. **The risk is in the middle, not at the top.** Households in deciles 6–9
-   hold **64% of next quarter's revenue-at-risk** but only 14% of spending.
-   The top 10% hold just 0.7% of it: people who buy steadily rarely stop.
-3. **A fast-growing category is not always where new customers come from.**
-   Home and Apparel grow *and* are where new households start buying. Pet
-   grows mostly because existing heavy buyers spend more. Books is shrinking
-   but reaches 88% of households, so cutting it would hit exactly the
-   at-risk middle from finding 2.
+1. **Revenue is concentrated, but it's not 80/20.** The top 10% of households
+   spend 36% of all the money (the top 20% spend 55%). What makes them
+   different is mostly how often they order. They order about 11× as often as
+   the bottom half, but each order is only about 1.1× bigger. Ordering more
+   than 10 times a month turned out to be a way better sign of a top household
+   than having a high income.
+2. **The risk isn't at the top, it's in the middle.** Households in deciles
+   6–9 hold **64% of next quarter's revenue-at-risk** but only 14% of the
+   spending. The top 10% hold just 0.7% of it. Which kind of makes sense, people
+   who buy every week don't just suddenly stop.
+3. **Fast growth and new customers aren't the same thing.** Home and Apparel
+   are growing *and* they're where new households start buying. Pet is growing
+   too, but mostly because people who already buy a lot are buying more. Books
+   is shrinking, but 88% of households still buy books, so cutting it would hit
+   exactly the shaky middle group from #2.
 
-So the budget question has three parts: keep the top households, protect the
-middle, and win new customers through the everyday categories they start with.
+So if I was on the finance team I'd split the budget three ways: keep the top
+households, protect the middle, and bring new people in through the everyday
+categories they start with.
 
 [![Revenue-at-risk by decile: the top decile holds 0.7%, deciles 6 to 9 hold 64%](outputs/figures/layer2/decile_rar_ladder.png)](outputs/figures/layer2/decile_rar_ladder.png)
 
-## Words used here
+## Quick glossary
 
-| Term | Meaning |
-|---|---|
-| **GMV** | Gross merchandise value: total money spent. |
-| **Decile** | Rank households by spending and cut them into 10 equal groups. Decile 1 is the top 10%, decile 10 the bottom 10%. |
-| **Revenue-at-risk** | A household's chance of buying nothing next quarter × what it would normally spend that quarter. Added up, it says how much spending could go quiet. |
-| **Gini** | One number for concentration: 0 means everyone spends the same, 1 means one household spends everything. Here it is 0.528. |
-| **AUC** | How well a model ranks risky households above safe ones: 0.5 is a coin flip, 1.0 is perfect. |
-| **CAGR** | Average yearly growth rate, here over 2018–2022. |
+I use a few terms a lot, so here's what they mean:
+
+- **GMV** - gross merchandise value, basically the total money spent.
+- **Decile** - rank all households by spending and cut them into 10 equal
+  groups. Decile 1 is the top 10%, decile 10 is the bottom 10%.
+- **Revenue-at-risk** - a household's chance of buying nothing next quarter ×
+  what it would normally spend in a quarter. Add that up and you get how much
+  spending could go quiet.
+- **Gini** - one number for how concentrated spending is. 0 means everyone
+  spends the same, 1 means one household spends everything. It's 0.528 here.
+- **AUC** - how good a model is at ranking risky households above safe ones.
+  0.5 is a coin flip, 1.0 is perfect.
+- **CAGR** - average growth per year, here from 2018 to 2022.
 
 ## The data
 
-The public [Open e-commerce 1.0](https://doi.org/10.7910/DVN/YGLYDY) dataset
-(Berke et al., *Scientific Data* 2024): 5,027 U.S. households who agreed to
-share their Amazon purchase history, hosted on Harvard Dataverse. I keep
-purchases before 2023, because after that many people stopped reporting and
-their silence would look like they stopped buying. That leaves 5,026
+It's the public [Open e-commerce 1.0](https://doi.org/10.7910/DVN/YGLYDY)
+dataset (Berke et al., *Scientific Data* 2024): 5,027 U.S. households who agreed
+to share their Amazon order history, hosted on Harvard Dataverse. I only keep
+purchases before 2023. After that a lot of people stopped reporting, and if I
+kept it their silence would look like they stopped buying. That leaves 5,026
 households and about 1.85M purchases.
 
-These are volunteers, not a random sample of Amazon customers, so every number
-here means "in this panel," not "across Amazon."
+One thing to keep in mind: these are volunteers, not a random sample of Amazon
+customers. So every number here really means "in this panel", not "across all
+of Amazon".
 
 ## How it works
 
-| Step | Question | How | Where |
-|---|---|---|---|
-| 0 | Is the data complete? | Check the raw file's size, row count and household count against the published source before anything else runs. | `src/validate_data.py` |
-| 1 | Where is revenue concentrated? | SQL (DuckDB) ranks households into deciles; a Lorenz curve and the Gini measure concentration; the top-vs-bottom gap is split into "orders more often" vs. "spends more per order." | `notebooks/01_layer1_concentration.ipynb` |
-| 2 | What is at risk next quarter? | A logistic regression scores each household's chance of buying nothing in Q3 2022, using only its behavior up to June 30, 2022. Chance × expected Q3 spend = revenue-at-risk. | `notebooks/02_layer2_rar.ipynb` |
-| 3 | Where should budget go? | Claude helped group 1,816 raw category labels into 11 categories (the mapping is saved in the repo and was spot-checked by hand). Each category gets its size and 4-year growth, then the deciles and risk from steps 1–2 are joined back in. | `notebooks/03_layer3_allocation.ipynb` |
-| 4 | Can finance see it on one screen? | A Tableau dashboard with one panel per finding. | [Tableau Public](https://public.tableau.com/app/profile/leo.wan3084/viz/AmazonFinanceReviewDashboardQ32022/Dashboard1) |
+0. **Is the data even complete?** `src/validate_data.py` compares the raw
+   file's size, row count and household count to the published source before
+   anything else runs. (There's a story behind this one, see below.)
+1. **Where's the revenue?** (`notebooks/01_layer1_concentration.ipynb`) SQL
+   (DuckDB) ranks households into deciles, then a Lorenz curve and the Gini
+   show how concentrated it is. I also split the top-vs-bottom gap into "orders
+   more often" vs "spends more per order".
+2. **What's at risk next quarter?** (`notebooks/02_layer2_rar.ipynb`) A
+   logistic regression gives each household a chance of buying nothing in Q3
+   2022, using only what it did up to June 30, 2022. Chance × expected Q3 spend
+   = revenue-at-risk.
+3. **Where should the budget go?** (`notebooks/03_layer3_allocation.ipynb`)
+   There are 1,816 raw category labels, which is way too many, so I had Claude
+   help me group them into 11 categories. The mapping is saved in the repo and I
+   spot-checked it by hand. Each category then gets its size and 4-year growth,
+   and I join the deciles and the risk from steps 1 and 2 back in.
+4. **Can finance see it on one screen?** That's the
+   [Tableau dashboard](https://public.tableau.com/app/profile/leo.wan3084/viz/AmazonFinanceReviewDashboardQ32022/Dashboard1),
+   one panel per finding.
 
-I chose a simple logistic regression on purpose: a finance team needs to see
-*why* a household is flagged, and a black-box model wouldn't show that.
-[METHODOLOGY.md](METHODOLOGY.md) has the full reasoning for every step,
-including the category-by-category numbers.
+I went with a plain logistic regression on purpose. If you're on a finance team
+you want to see *why* a household got flagged, and a black-box model won't
+really tell you that. The reasoning behind every step (and the numbers for each
+category) is in [METHODOLOGY.md](METHODOLOGY.md).
 
 ## How I know the numbers are right
 
-- **The raw file is checked first.** This check exists because it happened to
-  me: my first copy had been opened in a spreadsheet, which silently cut it at
-  1,048,576 rows and lost 43% of the data (only 2,846 of 5,027 households). I
-  re-downloaded the full file, re-ran everything, and now the pipeline refuses
-  to start on a partial file. [METHODOLOGY.md](METHODOLOGY.md#layer-0-data-provenance)
-  lists which findings held and which moved.
+- **I check the raw file first, because I got burned.** My first copy had been
+  opened in a spreadsheet, which quietly cut it off at 1,048,576 rows. I lost
+  43% of the data (only 2,846 of 5,027 households) and didn't notice right
+  away. I re-downloaded the full file, re-ran everything, and now the pipeline
+  just refuses to start on a partial file.
+  [METHODOLOGY.md](METHODOLOGY.md#layer-0-data-provenance) lists which findings
+  held up and which ones moved.
 - **Same inputs every time.** The first notebook re-hashes the raw files
-  against [MANIFEST.md](MANIFEST.md) and stops if a single byte differs.
-- **Two independent calculations.** Every core table is computed in SQL and
-  again in Python (Polars); the two must agree on all 5,026 households.
-- **The risk model can't see the answer.** Its inputs stop at June 30, 2022
-  (enforced in the SQL), and the Q3 outcome is read separately. On households
-  it never saw, it scores **AUC 0.90** (5-fold cross-validation: 0.902 ± 0.011).
-  Trained on shuffled outcomes it drops to 0.53, close to a coin flip, so the
-  0.90 is real signal. One honest caveat: "days since last purchase" alone
-  already reaches 0.86, so most of the accuracy comes from how predictable
-  next-quarter drop-off is.
-- **Margins of error.** Key results carry bootstrap 95% confidence intervals
-  (1,000 resamples), so each number comes with a range, not just a point.
-- **Automated tests.** 26 tests run the real SQL files on a small made-up
-  dataset whose answers I worked out by hand, plus the statistics helpers and
-  the data check. They run on every push.
+  against [MANIFEST.md](MANIFEST.md) and stops if even one byte is different.
+- **Everything gets calculated twice.** Each core table is computed in SQL and
+  then again in Python (Polars), and the two have to agree on all 5,026
+  households.
+- **The risk model can't peek at the answer.** Its inputs stop at June 30, 2022
+  (that's enforced in the SQL), and the Q3 outcome is read separately. On
+  households it never saw it gets **AUC 0.90** (5-fold cross-validation:
+  0.902 ± 0.011). Trained on shuffled outcomes it drops to 0.53, basically a
+  coin flip, so the 0.90 is real signal. To be honest though, "days since last
+  purchase" alone already gets 0.86, so most of the accuracy is just that
+  next-quarter drop-off is pretty predictable.
+- **Margins of error.** The key results have bootstrap 95% confidence intervals
+  (1,000 resamples), so you get a range and not just one number.
+- **Tests.** 26 tests run the real SQL files on a tiny made-up dataset where I
+  worked out the answers by hand, plus the stats helpers and the data check.
+  They run on every push.
 
 ## Limitations
 
-- **A volunteer panel.** The households chose to share their data and are more
-  engaged than Amazon's average customer (87% bought something in Q3), so
-  engagement-type numbers are probably on the high side.
-- **Revenue-at-risk covers one quarter.** "Drop-off" means no purchase that
-  quarter, not a lost customer: about 28% of households that were silent for a
-  full year bought again within a quarter.
-- **Demographics are a 2021 snapshot.** Income and household size were asked
-  once, so a household whose income changed over 2018–2022 is labeled by its
-  2021 answer.
-- **Revenue only.** There is no cost or margin data, so "where should budget
+- **It's a volunteer panel.** These households chose to share their data and
+  they're more engaged than the average Amazon customer (87% bought something
+  in Q3), so anything about engagement is probably a bit on the high side.
+- **Revenue-at-risk only covers one quarter.** "Drop-off" means no purchase that
+  quarter, not a lost customer. About 28% of households that were silent for a
+  whole year came back within a quarter.
+- **Demographics are from 2021.** Income and household size were asked once, so
+  if someone's income changed between 2018 and 2022 they still get labeled with
+  their 2021 answer.
+- **Revenue only.** There's no cost or margin data, so "where should the budget
   go" is about revenue, not profit.
 
 ## Run it
@@ -122,7 +145,7 @@ pip install -r requirements.txt
 
 # Download amazon-purchases.csv, survey.csv and fields.csv from
 # Harvard Dataverse (doi:10.7910/DVN/YGLYDY) into data/raw/.
-# Don't open them in Excel or Sheets first: they cut files at 2^20 rows.
+# don't open them in Excel or Sheets first, they cut files at 2^20 rows
 python src/validate_data.py         # 1. check the raw data is complete
 
 jupyter notebook notebooks/         # 2. run notebooks 01, 02, 03 in order
@@ -134,8 +157,8 @@ python src/build_layer4_mockup.py      #    and the static preview above
 python -m pytest tests/             # tests (no raw data needed)
 ```
 
-On the full data, notebook 01 takes about 30 seconds and notebook 02 about 45
-seconds on an M-series Mac.
+On the full data notebook 01 takes about 30 seconds and notebook 02 about 45
+seconds on my M-series Mac.
 
 ## What's in the repo
 
@@ -150,10 +173,10 @@ METHODOLOGY.md   every method decision and caveat, step by step
 MANIFEST.md      input file hashes, output tables, runtimes
 ```
 
-## About
+## About me
 
-Built by **Leo Wan** (Liyuan Wan), studying Artificial Intelligence for
-Business at USC Marshall and Viterbi. This was my first end-to-end BI project.
-The part that taught me the most wasn't the model: it was finding out midway
-that my raw file had been silently cut short, and re-checking every number
-afterward. Feedback is welcome via issues.
+I'm **Leo Wan** (Liyuan Wan), I study Artificial Intelligence for Business at
+USC Marshall and Viterbi. This was my first end-to-end BI project. Honestly the
+part that taught me the most wasn't the model, it was finding out halfway
+through that my raw file had been cut short and then having to re-check every
+single number. If you spot something off feel free to open an issue.
